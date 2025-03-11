@@ -57,3 +57,8 @@ kubectl apply -f k8s/dapr.tracing.yaml
 ```
 
 ## Create apps
+
+```
+kubectl apply -f k8s/dapr.app.consumer.yaml
+kubectl apply -f k8s/dapr.app.publisher.yaml
+```

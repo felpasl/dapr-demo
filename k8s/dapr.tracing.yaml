@@ -7,7 +7,6 @@ spec:
   tracing:
     samplingRate: "1"
     stdout: true
-    protocol: grpc
     otel:
       endpointAddress: "otel-collector-opentelemetry-collector.devops.svc.cluster.local:4317"
       isSecure: false
