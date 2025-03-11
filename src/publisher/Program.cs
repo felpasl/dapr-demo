@@ -13,6 +13,11 @@ using var log = new LoggerConfiguration()
 
 var app = builder.Build();
 
+app.UseCloudEvents();
+
+// needed for Dapr pub/sub routing
+app.MapSubscribeHandler();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
