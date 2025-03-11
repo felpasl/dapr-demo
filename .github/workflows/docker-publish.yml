@@ -25,13 +25,13 @@ jobs:
         service: [consumer, publisher, worker]
         include:
           - service: consumer
-            dockerfile: ./Consumer/Dockerfile
+            dockerfile: ./src/consumer/Dockerfile
             context: .
           - service: publisher
-            dockerfile: ./Publisher/Dockerfile
+            dockerfile: ./src/publisher/Dockerfile
             context: .
           - service: worker
-            dockerfile: ./Worker/Dockerfile
+            dockerfile: ./src/worker/Dockerfile
             context: .
 
     steps:
