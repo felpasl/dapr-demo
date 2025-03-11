@@ -42,6 +42,7 @@ app.MapGet("/work",[Topic("kafka-pubsub", "newProcess")] async (WorkTodo work)=>
     return Results.Ok(work);
 });
 
+app.Run();
 
 class WorkTodo
 {
