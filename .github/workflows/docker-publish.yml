@@ -26,13 +26,13 @@ jobs:
         include:
           - service: consumer
             dockerfile: ./src/consumer/Dockerfile
-            context: .
+            context: ./src/consumer/
           - service: publisher
             dockerfile: ./src/publisher/Dockerfile
-            context: .
+            context: ./src/publisher/
           - service: worker
             dockerfile: ./src/worker/Dockerfile
-            context: .
+            context: ./src/worker/
 
     steps:
       - name: Checkout repository
