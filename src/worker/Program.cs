@@ -1,10 +1,25 @@
+using Dapr;
+using Dapr.Client;
+using Serilog;
+
 var builder = WebApplication.CreateBuilder(args);
 
+using var log = new LoggerConfiguration()
+    .WriteTo.Console()
+    .CreateLogger();
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
+
+
 var app = builder.Build();
+
+app.UseCloudEvents();
+
+// needed for Dapr pub/sub routing
+app.MapSubscribeHandler();
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -12,30 +27,28 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
-
-var summaries = new[]
+app.MapGet("/work",[Topic("kafka-pubsub", "newProcess")] async (WorkTodo work)=>
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+    var serializedWork = System.Text.Json.JsonSerializer.Serialize(work);
+    log.Information("New process started: {serializedWork}", serializedWork);
 
-app.MapGet("/weatherforecast", () =>
+    await Task.Delay(work.Duration);
+
+    work.Status = "Completed";
+
+    using var client = new DaprClientBuilder().Build();
+    await client.PublishEventAsync<WorkTodo>("kafka-pubsub", "workCompleted", work);
+
+    return Results.Ok(work);
+});
+
+
+class WorkTodo
 {
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
-
-app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    public Guid Id { get; set; }
+    public Guid ProcessId { get; set; }
+    public DateTime startAt { get; set; }
+    public string Name { get; set; }
+    public int Duration { get; set; }
+    public string Status { get; set; }
 }

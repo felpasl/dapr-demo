@@ -32,7 +32,6 @@ app.MapPost("/processing",[Topic("kafka-pubsub", "newProcess")] async (ProcessDa
     var count = System.Environment.GetEnvironmentVariable("WORK_COUNT") ?? "5";
     
     using var client = new DaprClientBuilder().Build();
-    process.Status = "Processing";
     
     await client.PublishEventAsync<ProcessData>("kafka-pubsub", "processing", process);
     
@@ -53,7 +52,7 @@ app.MapPost("/processing",[Topic("kafka-pubsub", "newProcess")] async (ProcessDa
 
         await client.PublishEventAsync<WorkTodo>("kafka-pubsub", "newWork", work);
     }
-    
+
     return  Results.Ok(process);
 });
 

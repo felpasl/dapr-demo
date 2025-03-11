@@ -1,0 +1,71 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: worker
+  labels:
+    app: worker
+spec:
+  selector:
+    app: worker
+  ports:
+    - protocol: TCP
+      port: 8081
+      targetPort: 8080
+  type: ClusterIP
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker
+  labels:
+    app: worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: worker
+  template:
+    metadata:
+      labels:
+        app: worker
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "worker"
+        dapr.io/app-port: "8080"
+        dapr.io/config: "tracing"
+        dapr.io/log-level: "debug"
+    spec:
+      containers:
+        - name: worker
+          image: ghcr.io/felpasl/dapr-demo/worker:latest
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          ports:
+            - containerPort: 8080
+          imagePullPolicy: Always
+      imagePullSecrets:
+        - name: regcred
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: worker
+  namespace: default
+  labels:
+    name: worker
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: pub.localhost
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: worker
+                port:
+                  number: 8081
