@@ -24,7 +24,7 @@ app.UseCloudEvents();
 // needed for Dapr pub/sub routing
 app.MapSubscribeHandler();
 
-app.MapPost("/processing",[Topic("kafka-pubsub", "newProcess")] (ProcessData process) => {
+app.MapPost("/processing",[Topic("kafka-pubsub", "newProcess")] async (ProcessData process) => {
     
     var serializedProcess = System.Text.Json.JsonSerializer.Serialize(process);
     log.Information("New process started: {process}", serializedProcess);
@@ -34,7 +34,7 @@ app.MapPost("/processing",[Topic("kafka-pubsub", "newProcess")] (ProcessData pro
     using var client = new DaprClientBuilder().Build();
     process.Status = "Processing";
     
-    client.PublishEventAsync<ProcessData>("kafka-pubsub", "processing", process);
+    await client.PublishEventAsync<ProcessData>("kafka-pubsub", "processing", process);
     
     for(int i = 0; i < int.Parse(count); i++)
     {
@@ -51,7 +51,7 @@ app.MapPost("/processing",[Topic("kafka-pubsub", "newProcess")] (ProcessData pro
         var serializedWork = System.Text.Json.JsonSerializer.Serialize(work);
         log.Information("New process started: {serializedWork}", serializedWork);
 
-        client.PublishEventAsync<WorkTodo>("kafka-pubsub", "newWork", work);
+        await client.PublishEventAsync<WorkTodo>("kafka-pubsub", "newWork", work);
     }
     
     return  Results.Ok(process);
