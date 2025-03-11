@@ -10,7 +10,7 @@ spec:
   ports:
     - protocol: TCP
       port: 9091
-      targetPort: 80
+      targetPort: 8080
   type: ClusterIP
 
 ---
@@ -32,19 +32,22 @@ spec:
       annotations:
         dapr.io/enabled: "true"
         dapr.io/app-id: "consumer"
-        dapr.io/app-port: "80"
+        dapr.io/app-port: "8080"
         dapr.io/config: "tracing"
         dapr.io/log-level: "debug"
     spec:
       containers:
         - name: consumer
-          image: ghcr.io/cvitaa11/dapr-demo/dotnet-consumer:4ed2bc8e62e4fdfab74e9343732fbe0c50a2f8ac
+          image: ghcr.io/felpasl/dapr-demo/consumer:latest
           resources:
             limits:
               memory: "128Mi"
               cpu: "500m"
+          env:
+            - name: WORK_COUNT
+              value: "10"
           ports:
-            - containerPort: 80
+            - containerPort: 8080
           imagePullPolicy: Always
       imagePullSecrets:
         - name: regcred
