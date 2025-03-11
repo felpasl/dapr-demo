@@ -43,11 +43,10 @@ app.MapPost("/processing",[Topic("kafka-pubsub", "newProcess")] async (ProcessDa
     if (httpContext != null && httpContext.Request.Headers.TryGetValue(traceparent, out var parentValue))
     {
         metadata.Add("cloudevent.traceparent", parentValue.ToString());
+        log.Information("traceparent: {traceparent}", metadata["cloudevent.traceparent"]);
     }
     else
     {
-        // If no trace header found, initialize with empty string
-        metadata.Add("cloudevent.traceparent", "");
     }
 
     await client.PublishEventAsync<ProcessData>("kafka-pubsub", "processing", process, metadata);
