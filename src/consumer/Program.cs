@@ -53,7 +53,7 @@ app.MapPost("/processing",[Topic("kafka-pubsub", "newProcess")] async (ProcessDa
         await client.PublishEventAsync<WorkTodo>("kafka-pubsub", "newWork", work);
     }
 
-    return  Results.Ok(process);
+    return  Results.Ok();
 });
 
 app.Run();

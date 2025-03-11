@@ -39,7 +39,7 @@ app.MapPost("/work",[Topic("kafka-pubsub", "newWork")] async (WorkTodo work)=>
     using var client = new DaprClientBuilder().Build();
     await client.PublishEventAsync<WorkTodo>("kafka-pubsub", "workCompleted", work);
 
-    return Results.Ok(work);
+    return Results.Ok();
 });
 
 app.Run();
