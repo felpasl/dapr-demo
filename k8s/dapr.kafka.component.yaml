@@ -1,0 +1,27 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: kafka-pubsub
+  namespace: default
+spec:
+  type: pubsub.kafka
+  version: v1
+  metadata:
+    # Kafka broker connection setting
+    - name: brokers
+      value: "kafka.default:9092"
+    - name: authtype
+      value: password
+    - name: clientID
+      value: "dapr"
+    - name: disableTls
+      value: "true"
+    # - name: saslMechanism
+    #   value: "PLAINTEXT"
+    - name: saslUsername
+      value: "user1"
+    - name: saslPassword
+      # value: "pGp8XSNKeq"
+      secretKeyRef:
+        name: kafka-user-passwords
+        key: client-passwords

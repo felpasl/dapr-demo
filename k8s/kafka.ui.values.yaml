@@ -1,0 +1,21 @@
+envs:
+  config:
+    KAFKA_CLUSTERS_0_NAME: env-1
+    KAFKA_CLUSTERS_0_PROPERTIES_SASL_MECHANISM: PLAIN
+    KAFKA_CLUSTERS_0_PROPERTIES_SECURITY_PROTOCOL: SASL_PLAINTEXT
+    KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka.default:9092
+  secret:
+    KAFKA_CLUSTERS_0_PROPERTIES_SASL_JAAS_CONFIG: org.apache.kafka.common.security.plain.PlainLoginModule required username="user1" password="3qkctYs73k";
+yamlApplicationConfig:
+  dynamic.config.enabled: true
+resources:
+  limits:
+    cpu: 500m
+    memory: 1Gi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+ingress:
+  enabled: true
+  ingressClassName: "nginx"
+  host: "kafka.localhost"

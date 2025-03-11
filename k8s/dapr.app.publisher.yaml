@@ -1,0 +1,71 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: publisher
+  labels:
+    app: publisher
+spec:
+  selector:
+    app: publisher
+  ports:
+    - protocol: TCP
+      port: 8081
+      targetPort: 80
+  type: ClusterIP
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: publisher
+  labels:
+    app: publisher
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: publisher
+  template:
+    metadata:
+      labels:
+        app: publisher
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "publisher"
+        dapr.io/app-port: "80"
+        dapr.io/config: "tracing"
+        dapr.io/log-level: "debug"
+    spec:
+      containers:
+        - name: publisher
+          image: ghcr.io/cvitaa11/dapr-demo/dotnet-publisher:4c0c0024f56dab6bec4dadf2b5ec8f7ff4fcba3e
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          ports:
+            - containerPort: 80
+          imagePullPolicy: Always
+      imagePullSecrets:
+        - name: regcred
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: publisher
+  namespace: default
+  labels:
+    name: publisher
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: pub.localhost
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: publisher
+                port:
+                  number: 8081
