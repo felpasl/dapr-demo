@@ -18,13 +18,30 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+string traceparent = "traceparent";
 
 app.MapGet("/process", () =>
 {
     using var client = new DaprClientBuilder().Build();
-    var process = new ProcessData(Guid.NewGuid(), DateTime.Now, "ProcessData");
-    client.PublishEventAsync<ProcessData>("kafka-pubsub", "newProcess", process);
     
+    Dictionary<string, string> metadata = new Dictionary<string, string>();
+    // Get the traceparent header from the current request context
+    var httpContext = app.Services.GetService<IHttpContextAccessor>()?.HttpContext;
+    if (httpContext != null && httpContext.Request.Headers.TryGetValue(traceparent, out var parentValue))
+    {
+        metadata.Add("cloudevent.traceparent", parentValue.ToString());
+    }
+    else
+    {
+        // If no trace header found, initialize with empty string
+        metadata.Add("cloudevent.traceparent", "");
+    }
+
+
+    var process = new ProcessData(Guid.NewGuid(), DateTime.Now, "ProcessData");
+    client.PublishEventAsync<ProcessData>("kafka-pubsub", "newProcess", process, metadata);
+    
+
     var serializedProcess = System.Text.Json.JsonSerializer.Serialize(process);
     log.Information("New process started: {process}", serializedProcess);
     
