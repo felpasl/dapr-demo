@@ -1,10 +1,18 @@
+using Dapr.Client;
+using Serilog;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
+using var log = new LoggerConfiguration()
+    .WriteTo.Console()
+    .CreateLogger();
+
 var app = builder.Build();
+using var client = new DaprClientBuilder().Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -12,30 +20,30 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
-
-var summaries = new[]
+app.MapGet("/process", () =>
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
+    var process = new ProcessData(Guid.NewGuid(), DateTime.Now, "ProcessData");
+    client.PublishEventAsync<ProcessData>("kafka-pubsub", "newProcess", process);
+    log.Information("New process started: {process}", process);
+    return process;
 })
-.WithName("GetWeatherForecast");
+.WithName("Start a new process");
 
 app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+class ProcessData
 {
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    public ProcessData(Guid id, DateTime startAt, string name)
+    {
+        Id = id;
+        StartAt = startAt;
+        Name = name;
+        EndAt = null;
+        Status = "Started";
+    }
+    public Guid Id { get; set; }
+    public DateTime StartAt { get; set; }
+    public string Name { get; set; }
+    public DateTime? EndAt { get; set; }
+    public string Status { get; set; }
 }
