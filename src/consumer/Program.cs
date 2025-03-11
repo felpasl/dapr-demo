@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Dapr;
 using Serilog;
 using Dapr.Client;
+using Google.Api;
 
 var builder = WebApplication.CreateBuilder(args);
 using var log = new LoggerConfiguration()
@@ -24,6 +25,8 @@ app.UseCloudEvents();
 // needed for Dapr pub/sub routing
 app.MapSubscribeHandler();
 
+string traceparent = "traceparent";
+
 app.MapPost("/processing",[Topic("kafka-pubsub", "newProcess")] async (ProcessData process) => {
     
     var serializedProcess = System.Text.Json.JsonSerializer.Serialize(process);
@@ -33,7 +36,21 @@ app.MapPost("/processing",[Topic("kafka-pubsub", "newProcess")] async (ProcessDa
     
     using var client = new DaprClientBuilder().Build();
     
-    await client.PublishEventAsync<ProcessData>("kafka-pubsub", "processing", process);
+    Dictionary<string, string> metadata = new Dictionary<string, string>();
+
+    // Get the traceparent header from the current request context
+    var httpContext = app.Services.GetService<IHttpContextAccessor>()?.HttpContext;
+    if (httpContext != null && httpContext.Request.Headers.TryGetValue(traceparent, out var parentValue))
+    {
+        metadata.Add(traceparent, parentValue.ToString());
+    }
+    else
+    {
+        // If no trace header found, initialize with empty string
+        metadata.Add(traceparent, "");
+    }
+
+    await client.PublishEventAsync<ProcessData>("kafka-pubsub", "processing", process, metadata);
     
     for(int i = 0; i < int.Parse(count); i++)
     {
@@ -50,7 +67,7 @@ app.MapPost("/processing",[Topic("kafka-pubsub", "newProcess")] async (ProcessDa
         var serializedWork = System.Text.Json.JsonSerializer.Serialize(work);
         log.Information("New process started: {serializedWork}", serializedWork);
 
-        await client.PublishEventAsync<WorkTodo>("kafka-pubsub", "newWork", work);
+        await client.PublishEventAsync<WorkTodo>("kafka-pubsub", "newWork", work, metadata);
     }
 
     return  Results.Ok();

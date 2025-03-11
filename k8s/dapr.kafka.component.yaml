@@ -1,7 +1,7 @@
 apiVersion: dapr.io/v1alpha1
 kind: Component
 metadata:
-  name: kafka-sub
+  name: kafka-pubsub
   namespace: default
 spec:
   type: pubsub.kafka
@@ -12,8 +12,6 @@ spec:
       value: "kafka.default:9092"
     - name: authtype
       value: password
-    - name: clientID
-      value: "dapr"
     - name: disableTls
       value: "true"
     # - name: saslMechanism
