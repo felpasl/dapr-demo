@@ -68,7 +68,7 @@ app.MapPost("/processing",[Topic("kafka-pubsub", "newProcess")] async (ProcessDa
         log.Information("New process started: {serializedWork}", serializedWork);
         workList.Add(work);
     }
-    await client.BulkPublishEventAsync<WorkTodo>("kafka-pubsub", "newWork", workList, metadata);
+    await client.BulkPublishEventAsync<WorkTodo>("kafka-pubsub", "newWork", workList);
 
     return  Results.Ok();
 });

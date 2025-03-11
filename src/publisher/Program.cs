@@ -25,7 +25,7 @@ if (app.Environment.IsDevelopment())
 }
 string traceparent = "traceparent";
 
-app.MapGet("/process", () =>
+app.MapGet("/process", async () =>
 {
     using var client = new DaprClientBuilder().Build();
     
@@ -42,7 +42,8 @@ app.MapGet("/process", () =>
     }
 
     var process = new ProcessData(Guid.NewGuid(), DateTime.Now, "ProcessData");
-    client.PublishEventAsync<ProcessData>("kafka-pubsub", "newProcess", process, metadata);
+    
+    await client.PublishEventAsync<ProcessData>("kafka-pubsub", "newProcess", process, metadata);
     
 
     var serializedProcess = System.Text.Json.JsonSerializer.Serialize(process);
