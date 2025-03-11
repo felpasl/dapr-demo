@@ -12,7 +12,6 @@ using var log = new LoggerConfiguration()
     .CreateLogger();
 
 var app = builder.Build();
-using var client = new DaprClientBuilder().Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -22,9 +21,13 @@ if (app.Environment.IsDevelopment())
 
 app.MapGet("/process", () =>
 {
+    using var client = new DaprClientBuilder().Build();
     var process = new ProcessData(Guid.NewGuid(), DateTime.Now, "ProcessData");
     client.PublishEventAsync<ProcessData>("kafka-pubsub", "newProcess", process);
-    log.Information("New process started: {process}", process);
+    
+    var serializedProcess = System.Text.Json.JsonSerializer.Serialize(process);
+    log.Information("New process started: {process}", serializedProcess);
+    
     return process;
 })
 .WithName("Start a new process");

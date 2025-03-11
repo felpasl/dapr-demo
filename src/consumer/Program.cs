@@ -1,5 +1,12 @@
-var builder = WebApplication.CreateBuilder(args);
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
+using Dapr;
+using Serilog;
+using Dapr.Client;
 
+var builder = WebApplication.CreateBuilder(args);
+using var log = new LoggerConfiguration()
+    .WriteTo.Console()
+    .CreateLogger();
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
@@ -12,30 +19,70 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
+app.UseCloudEvents();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+// needed for Dapr pub/sub routing
+app.MapSubscribeHandler();
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+app.MapPost("/processing",[Topic("kafka-pubsub", "newProcess")] (ProcessData process) => {
+    
+    var serializedProcess = System.Text.Json.JsonSerializer.Serialize(process);
+    log.Information("New process started: {process}", serializedProcess);
+
+    var count = System.Environment.GetEnvironmentVariable("WORK_COUNT") ?? "5";
+    
+    using var client = new DaprClientBuilder().Build();
+    process.Status = "Processing";
+    
+    client.PublishEventAsync<ProcessData>("kafka-pubsub", "processing", process);
+    
+    for(int i = 0; i < int.Parse(count); i++)
+    {
+        var work = new WorkTodo
+        {
+            Id = Guid.NewGuid(),
+            ProcessId = process.Id,
+            startAt = DateTime.Now,
+            Name = $"Work {i}",
+            Duration = new Random().Next(20, 100),
+            Status = "Started"
+        };
+        
+        var serializedWork = System.Text.Json.JsonSerializer.Serialize(work);
+        log.Information("New process started: {serializedWork}", serializedWork);
+
+        client.PublishEventAsync<WorkTodo>("kafka-pubsub", "newWork", work);
+    }
+    
+    return process;
+});
 
 app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+
+class ProcessData
 {
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    public ProcessData(Guid id, DateTime startAt, string name)
+    {
+        Id = id;
+        StartAt = startAt;
+        Name = name;
+        EndAt = null;
+        Status = "Started";
+    }
+    public Guid Id { get; set; }
+    public DateTime StartAt { get; set; }
+    public string Name { get; set; }
+    public DateTime? EndAt { get; set; }
+    public string Status { get; set; }
+}
+
+class WorkTodo
+{
+    public Guid Id { get; set; }
+    public Guid ProcessId { get; set; }
+    public DateTime startAt { get; set; }
+    public string Name { get; set; }
+    public int Duration { get; set; }
+    public string Status { get; set; }
 }
