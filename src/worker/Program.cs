@@ -27,7 +27,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.MapGet("/work",[Topic("kafka-pubsub", "newProcess")] async (WorkTodo work)=>
+app.MapPost("/work",[Topic("kafka-pubsub", "newWork")] async (WorkTodo work)=>
 {
     var serializedWork = System.Text.Json.JsonSerializer.Serialize(work);
     log.Information("New process started: {serializedWork}", serializedWork);
