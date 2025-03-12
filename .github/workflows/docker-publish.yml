@@ -15,8 +15,29 @@ env:
   IMAGE_NAME_PREFIX: ${{ github.repository }}
 
 jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore
+
+      - name: Run tests
+        run: dotnet test --no-build --verbosity normal
+
   build-and-push-images:
     runs-on: ubuntu-latest
+    needs: run-tests
     permissions:
       contents: read
       packages: write
