@@ -8,16 +8,16 @@ namespace Consumer.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class ProcessController : ControllerBase
+    public class ConsumerController : ControllerBase
     {
-        private readonly IProcessService _processService;
+        private readonly IConsumerService _processService;
         private readonly IHttpContextAccessor _httpContextAccessor;
         
         private const string TRACEPARENT = "traceparent";
         private const string TRACESTATE = "tracestate";
 
-        public ProcessController(
-            IProcessService processService, 
+        public ConsumerController(
+            IConsumerService processService, 
             IHttpContextAccessor httpContextAccessor)
         {
             _processService = processService;

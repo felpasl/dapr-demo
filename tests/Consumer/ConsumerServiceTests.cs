@@ -6,15 +6,15 @@ using Xunit;
 
 namespace Tests.Consumer;
 
-public class ProcessServiceTests
+public class ConsumerServiceTests
 {
     private readonly Mock<DaprClient> _mockDaprClient;
-    private readonly ProcessService _processService;
+    private readonly ConsumerService _consumeService;
 
-    public ProcessServiceTests()
+    public ConsumerServiceTests()
     {
         _mockDaprClient = new Mock<DaprClient>();
-        _processService = new ProcessService(_mockDaprClient.Object);
+        _consumeService = new ConsumerService(_mockDaprClient.Object);
     }
 
     [Fact]
@@ -52,7 +52,7 @@ public class ProcessServiceTests
             .Returns(Task.CompletedTask);
 
         // Act
-        await _processService.ProcessNewWorkAsync(process, metadata);
+        await _consumeService.ProcessNewWorkAsync(process, metadata);
 
         // Assert
         _mockDaprClient.Verify(
@@ -121,7 +121,7 @@ public class ProcessServiceTests
             .Returns(Task.CompletedTask);
 
         // Act
-        await _processService.ProcessNewWorkAsync(process, metadata);
+        await _consumeService.ProcessNewWorkAsync(process, metadata);
 
         // Assert
         Assert.Equal(5, capturedWorkItems.Count);
@@ -170,7 +170,7 @@ public class ProcessServiceTests
             .Returns(Task.CompletedTask);
 
         // Act
-        await _processService.ProcessNewWorkAsync(process, metadata);
+        await _consumeService.ProcessNewWorkAsync(process, metadata);
 
         // Assert
         Assert.Equal(2, capturedWorkItems.Count);

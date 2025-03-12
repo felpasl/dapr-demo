@@ -4,11 +4,11 @@ using Serilog;
 
 namespace Consumer.Services
 {
-    public class ProcessService : IProcessService
+    public class ConsumerService : IConsumerService
     {
         private readonly DaprClient _daprClient;
 
-        public ProcessService(DaprClient daprClient)
+        public ConsumerService(DaprClient daprClient)
         {
             _daprClient = daprClient;
         }

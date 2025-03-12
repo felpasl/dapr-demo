@@ -24,7 +24,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddControllers().AddDapr();
 
 // Register services for DI
-builder.Services.AddScoped<IProcessService, ProcessService>();
+builder.Services.AddScoped<IConsumerService, ConsumerService>();
 
 var app = builder.Build();
 
