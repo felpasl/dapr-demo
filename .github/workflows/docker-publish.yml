@@ -48,6 +48,20 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Remove previous packages
+        if: github.event_name != 'pull_request'
+        run: |
+          echo "Removing previous packages for ${{ matrix.service }}..."
+          gh api \
+            --method GET \
+            /orgs/${{ github.repository_owner }}/packages/container/${{ env.IMAGE_NAME_PREFIX }}/${{ matrix.service }}/versions \
+            -q '.[] | .id' | \
+          xargs -I{} gh api \
+            --method DELETE \
+            /orgs/${{ github.repository_owner }}/packages/container/${{ env.IMAGE_NAME_PREFIX }}/${{ matrix.service }}/versions/{}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Extract metadata for Docker
         id: meta
         uses: docker/metadata-action@v4

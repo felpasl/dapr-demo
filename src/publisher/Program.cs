@@ -1,15 +1,26 @@
 using Dapr.Client;
 using Serilog;
+using Publisher.Services;
+using Publisher.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
-using var log = new LoggerConfiguration()
+// Setup Serilog
+var logger = new LoggerConfiguration()
     .WriteTo.Console()
     .CreateLogger();
+Log.Logger = logger;
+
+// Add services for DI
+builder.Services.AddDaprClient();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IProcessService, ProcessService>();
+builder.Services.AddControllers(); // Add controllers
 
 var app = builder.Build();
 
@@ -19,55 +30,16 @@ app.UseCloudEvents();
 app.MapSubscribeHandler();
 
 // Configure the HTTP request pipeline.
+
+// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
-string traceparent = "traceparent";
 
-app.MapGet("/process", async () =>
-{
-    using var client = new DaprClientBuilder().Build();
-    
-    Dictionary<string, string> metadata = new Dictionary<string, string>();
-    // Get the traceparent header from the current request context
-    var httpContext = app.Services.GetService<IHttpContextAccessor>()?.HttpContext;
-    if (httpContext != null && httpContext.Request.Headers.TryGetValue(traceparent, out var parentValue))
-    {
-        metadata.Add("cloudevent.traceparent", parentValue.ToString());
-        log.Information("traceparent: {traceparent}", metadata["cloudevent.traceparent"]);
-    }
-    else
-    {
-    }
 
-    var process = new ProcessData(Guid.NewGuid(), DateTime.Now, "ProcessData");
-    
-    await client.PublishEventAsync<ProcessData>("kafka-pubsub", "newProcess", process, metadata);
-    
-
-    var serializedProcess = System.Text.Json.JsonSerializer.Serialize(process);
-    log.Information("New process started: {process}", serializedProcess);
-    
-    return process;
-})
-.WithName("Start a new process");
+// Use controllers instead of individual endpoint mapping
+app.MapControllers();
 
 app.Run();
-
-class ProcessData
-{
-    public ProcessData(Guid id, DateTime startAt, string name)
-    {
-        Id = id;
-        StartAt = startAt;
-        Name = name;
-        EndAt = null;
-        Status = "Started";
-    }
-    public Guid Id { get; set; }
-    public DateTime StartAt { get; set; }
-    public string Name { get; set; }
-    public DateTime? EndAt { get; set; }
-    public string Status { get; set; }
-}

@@ -1,17 +1,25 @@
 using Dapr;
 using Dapr.Client;
 using Serilog;
+using Worker.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-using var log = new LoggerConfiguration()
+// Configure Serilog
+var logger = new LoggerConfiguration()
     .WriteTo.Console()
     .CreateLogger();
+Log.Logger = logger;
+
 // Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
-
+builder.Services.AddDaprClient();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IWorkService, WorkService>();
+builder.Services.AddControllers().AddDapr();
 
 var app = builder.Build();
 
@@ -20,36 +28,15 @@ app.UseCloudEvents();
 // needed for Dapr pub/sub routing
 app.MapSubscribeHandler();
 
-
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
-app.MapPost("/work",[Topic("kafka-pubsub", "newWork")] async (WorkTodo work)=>
-{
-    var serializedWork = System.Text.Json.JsonSerializer.Serialize(work);
-    log.Information("New process started: {serializedWork}", serializedWork);
 
-    await Task.Delay(work.Duration);
-
-    work.Status = "Completed";
-
-    using var client = new DaprClientBuilder().Build();
-    await client.PublishEventAsync<WorkTodo>("kafka-pubsub", "workCompleted", work);
-
-    return Results.Ok();
-});
+// Use controllers instead of individual endpoint mapping
+app.MapControllers();
 
 app.Run();
-
-class WorkTodo
-{
-    public Guid Id { get; set; }
-    public Guid ProcessId { get; set; }
-    public DateTime startAt { get; set; }
-    public string Name { get; set; }
-    public int Duration { get; set; }
-    public string Status { get; set; }
-}
