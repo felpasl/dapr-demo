@@ -2,7 +2,8 @@ name: Build and Publish Docker Images
 
 on:
   push:
-    branches: [main]
+    tags:
+      - 'v*'  # Run only when tags matching v* are pushed
   pull_request:
     branches: [main]
   # Allow manual trigger
@@ -48,31 +49,17 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Remove previous packages
-        if: github.event_name != 'pull_request'
-        run: |
-          echo "Removing previous packages for ${{ matrix.service }}..."
-          gh api \
-            --method GET \
-            /orgs/${{ github.repository_owner }}/packages/container/${{ env.IMAGE_NAME_PREFIX }}/${{ matrix.service }}/versions \
-            -q '.[] | .id' | \
-          xargs -I{} gh api \
-            --method DELETE \
-            /orgs/${{ github.repository_owner }}/packages/container/${{ env.IMAGE_NAME_PREFIX }}/${{ matrix.service }}/versions/{}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Extract metadata for Docker
         id: meta
         uses: docker/metadata-action@v4
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PREFIX }}/${{ matrix.service }}
           tags: |
-            type=ref,event=branch
-            type=ref,event=pr
             type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=ref,event=pr
             type=sha,format=short
-            latest
+            type=raw,value=latest,enable=${{ github.ref_type == 'tag' }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v3
