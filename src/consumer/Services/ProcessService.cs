@@ -21,8 +21,7 @@ namespace Consumer.Services
             var count = System.Environment.GetEnvironmentVariable("WORK_COUNT") ?? "5";
 
             await _daprClient.PublishEventAsync<ProcessData>("kafka-pubsub", "processing", process, metadata);
-
-            List<WorkTodo> workList = new List<WorkTodo>();
+            
             for (int i = 0; i < int.Parse(count); i++)
             {
                 var work = new WorkTodo
@@ -37,10 +36,8 @@ namespace Consumer.Services
 
                 var serializedWork = System.Text.Json.JsonSerializer.Serialize(work);
                 Log.Information("New work created: {serializedWork}", serializedWork);
-                workList.Add(work);
+                await _daprClient.PublishEventAsync<WorkTodo>("kafka-pubsub", "newWork", work, metadata);
             }
-            
-            await _daprClient.BulkPublishEventAsync<WorkTodo>("kafka-pubsub", "newWork", workList, metadata);
         }
     }
 }
