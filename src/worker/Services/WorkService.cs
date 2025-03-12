@@ -26,6 +26,7 @@ namespace Worker.Services
 
             if (work.Index == work.Total - 1)
             {
+                Log.Information("Process {processId} completed", work.ProcessId);
                 await _daprClient.PublishEventAsync<ProcessFinished>("kafka-pubsub", "processCompleted", new ProcessFinished(work.ProcessId, DateTime.Now, "Success"), metadata);
             }
 

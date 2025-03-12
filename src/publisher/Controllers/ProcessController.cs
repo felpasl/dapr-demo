@@ -42,7 +42,7 @@ public class ProcessController : ControllerBase
 
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [Topic("kafka-pubsub", "processFinised")]
+    [Topic("kafka-pubsub", "processCompleted")]
     public  IActionResult ProcessFinished(ProcessFinished process)
     {
         Log.Information("Process finished: {id}", process.Id);
