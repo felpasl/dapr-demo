@@ -202,4 +202,131 @@ public class WorkerServiceTests
         Assert.NotNull(capturedWork);
         Assert.Equal("Completed", capturedWork!.Status);
     }
+    
+    [Fact]
+    public async Task ProcessWorkAsync_Should_PublishProcessCompletedEvent_WhenLastWorkItem()
+    {
+        // Arrange
+        var processId = Guid.NewGuid();
+        var workTodo = new WorkTodo
+        {
+            Id = Guid.NewGuid(),
+            ProcessId = processId,
+            Name = "Last Work Item",
+            Duration = 5,
+            Status = "Started",
+            startAt = DateTime.Now,
+            Index = 2,
+            Total = 3 // This makes Index == Total - 1, so it's the last item
+        };
+        
+        var metadata = new Dictionary<string, string>
+        {
+            { "traceid", "test-trace-id" }
+        };
+        
+        ProcessFinished? capturedProcessFinished = null;
+        
+        _mockDaprClient
+            .Setup(c => c.PublishEventAsync<WorkTodo>(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<WorkTodo>(),
+                It.IsAny<Dictionary<string, string>>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+            
+        _mockDaprClient
+            .Setup(c => c.PublishEventAsync<ProcessFinished>(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<ProcessFinished>(),
+                It.IsAny<Dictionary<string, string>>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<string, string, ProcessFinished, Dictionary<string, string>, CancellationToken>(
+                (_, _, process, _, _) => capturedProcessFinished = process)
+            .Returns(Task.CompletedTask);
+        
+        // Act
+        await _workerService.ProcessWorkAsync(workTodo, metadata);
+        
+        // Assert
+        // Verify work completed event was published
+        _mockDaprClient.Verify(
+            c => c.PublishEventAsync<WorkTodo>(
+                "kafka-pubsub",
+                "workCompleted",
+                It.Is<WorkTodo>(w => w.Status == "Completed"),
+                metadata,
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+            
+        // Verify process completed event was published
+        _mockDaprClient.Verify(
+            c => c.PublishEventAsync<ProcessFinished>(
+                "kafka-pubsub",
+                "processCompleted",
+                It.IsAny<ProcessFinished>(),
+                metadata,
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+            
+        // Verify the process finished data is correct
+        Assert.NotNull(capturedProcessFinished);
+        Assert.Equal(processId, capturedProcessFinished!.Id);
+        Assert.Equal("Success", capturedProcessFinished.Status);
+    }
+    
+    [Fact]
+    public async Task ProcessWorkAsync_ShouldNot_PublishProcessCompletedEvent_WhenNotLastWorkItem()
+    {
+        // Arrange
+        var processId = Guid.NewGuid();
+        var workTodo = new WorkTodo
+        {
+            Id = Guid.NewGuid(),
+            ProcessId = processId,
+            Name = "Not Last Work Item",
+            Duration = 5,
+            Status = "Started",
+            startAt = DateTime.Now,
+            Index = 1,  // Not the last item
+            Total = 3
+        };
+        
+        var metadata = new Dictionary<string, string>();
+        
+        _mockDaprClient
+            .Setup(c => c.PublishEventAsync<WorkTodo>(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<WorkTodo>(),
+                It.IsAny<Dictionary<string, string>>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        
+        // Act
+        await _workerService.ProcessWorkAsync(workTodo, metadata);
+        
+        // Assert
+        // Verify work completed event was published
+        _mockDaprClient.Verify(
+            c => c.PublishEventAsync<WorkTodo>(
+                "kafka-pubsub",
+                "workCompleted",
+                It.Is<WorkTodo>(w => w.Status == "Completed"),
+                metadata,
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+            
+        // Verify process completed event was NOT published
+        _mockDaprClient.Verify(
+            c => c.PublishEventAsync<ProcessFinished>(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<ProcessFinished>(),
+                It.IsAny<Dictionary<string, string>>(),
+                It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
 }
