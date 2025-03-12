@@ -59,6 +59,7 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=ref,event=pr
             type=sha,format=short
+            latest
             type=raw,value=latest,enable=${{ github.ref_type == 'tag' }}
 
       - name: Build and push Docker image

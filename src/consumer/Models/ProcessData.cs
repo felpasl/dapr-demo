@@ -11,8 +11,6 @@ namespace Consumer.Models
             Status = "Started";
         }
         
-        public ProcessData() { }
-        
         public Guid Id { get; set; }
         public DateTime StartAt { get; set; }
         public string Name { get; set; }
