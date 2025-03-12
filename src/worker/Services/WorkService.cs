@@ -23,6 +23,12 @@ namespace Worker.Services
             work.Status = "Completed";
 
             await _daprClient.PublishEventAsync<WorkTodo>("kafka-pubsub", "workCompleted", work, metadata);
+
+            if (work.Index == work.Total - 1)
+            {
+                await _daprClient.PublishEventAsync<ProcessFinished>("kafka-pubsub", "processCompleted", new ProcessFinished(work.ProcessId, DateTime.Now, "Success"), metadata);
+            }
+
         }
     }
 }

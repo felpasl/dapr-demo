@@ -14,6 +14,7 @@ namespace Consumer.Controllers
         private readonly IHttpContextAccessor _httpContextAccessor;
         
         private const string TRACEPARENT = "traceparent";
+        private const string TRACESTATE = "tracestate";
 
         public ProcessController(
             IProcessService processService, 
@@ -34,8 +35,12 @@ namespace Consumer.Controllers
             if (httpContext != null && httpContext.Request.Headers.TryGetValue(TRACEPARENT, out var parentValue))
             {
                 metadata.Add("cloudevent.traceparent", parentValue.ToString());
-                Log.Information("traceparent: {traceparent}", metadata["cloudevent.traceparent"]);
             }
+            if (httpContext != null && httpContext.Request.Headers.TryGetValue(TRACESTATE, out var stateValue))
+            {
+                metadata.Add("cloudevent.tracestate", stateValue.ToString());
+            }
+
 
             await _processService.ProcessNewWorkAsync(process, metadata);
             

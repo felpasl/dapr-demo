@@ -29,6 +29,8 @@ namespace Consumer.Services
                     Id = Guid.NewGuid(),
                     ProcessId = process.Id,
                     startAt = DateTime.Now,
+                    Total = int.Parse(count),
+                    Index = i,
                     Name = $"Work {i}",
                     Duration = new Random().Next(20, 100),
                     Status = "Started"

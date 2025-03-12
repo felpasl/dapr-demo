@@ -34,7 +34,6 @@ namespace Worker.Controllers
             if (httpContext != null && httpContext.Request.Headers.TryGetValue(TRACEPARENT, out var parentValue))
             {
                 metadata.Add("cloudevent.traceparent", parentValue.ToString());
-                Log.Information("traceparent: {traceparent}", metadata["cloudevent.traceparent"]);
             }
 
             await _workService.ProcessWorkAsync(work, metadata);
