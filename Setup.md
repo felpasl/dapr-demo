@@ -2,6 +2,8 @@
 
 
 ```
+helm repo add dapr https://dapr.github.io/helm-charts/
+
 helm upgrade --install dapr dapr/dapr \
 --version=1.15 \
 --namespace dapr-system \

@@ -10,17 +10,17 @@ namespace Consumer.Controllers
     [Route("[controller]")]
     public class ConsumerController : ControllerBase
     {
-        private readonly IConsumerService _processService;
+        private readonly IConsumerService _consumeService;
         private readonly IHttpContextAccessor _httpContextAccessor;
         
         private const string TRACEPARENT = "traceparent";
         private const string TRACESTATE = "tracestate";
 
         public ConsumerController(
-            IConsumerService processService, 
+            IConsumerService consumeService, 
             IHttpContextAccessor httpContextAccessor)
         {
-            _processService = processService;
+            _consumeService = consumeService;
             _httpContextAccessor = httpContextAccessor;
         }
 
@@ -42,7 +42,7 @@ namespace Consumer.Controllers
             }
 
 
-            await _processService.ProcessNewWorkAsync(process, metadata);
+            await _consumeService.ProcessNewWorkAsync(process, metadata);
             
             return Ok();
         }

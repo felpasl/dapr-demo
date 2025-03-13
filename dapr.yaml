@@ -1,0 +1,16 @@
+version: 1
+common:
+  resourcesPath: ./components/
+apps:
+  - appID: publisher
+    appDirPath: ./src/publisher
+    appPort: 5279
+    command: ["dotnet", "run"]
+  - appID: cosumer
+    appDirPath: ./src/consumer
+    appPort: 5121
+    command: ["dotnet", "run"]
+  - appID: worker
+    appDirPath: ./src/worker
+    appPort: 5020
+    command: ["dotnet", "run"]
