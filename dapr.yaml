@@ -5,12 +5,12 @@ apps:
   - appID: publisher
     appDirPath: ./src/publisher
     appPort: 5279
-    command: ["dotnet", "run"]
+    command: ["dotnet", "watch"]
   - appID: cosumer
     appDirPath: ./src/consumer
     appPort: 5121
-    command: ["dotnet", "run"]
+    command: ["dotnet", "watch"]
   - appID: worker
     appDirPath: ./src/worker
     appPort: 5020
-    command: ["dotnet", "run"]
+    command: ["dotnet", "watch"]

@@ -1,25 +1,41 @@
 {
     "configurations": [
+
         {
             "name": "Debug publisher",
             "type": "coreclr",
             "request": "attach",
             "processName": "publisher",
-            "preLaunchTask": "dapr"
+            "preLaunchTask": "dapr",
+            "postDebugTask": "dapr-stop"
         },
         {
             "name": "Debug consumer",
             "type": "coreclr",
             "request": "attach",
             "processName": "consumer",
-            "preLaunchTask": "dapr"
+            "preLaunchTask": "dapr",
+            "postDebugTask": "dapr-stop"
         },
         {
             "name": "Debug worker",
             "type": "coreclr",
             "request": "attach",
             "processName": "worker",
-            "preLaunchTask": "dapr"
+            "preLaunchTask": "dapr",
+            "postDebugTask": "dapr-stop"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Debug all",
+            "preLaunchTask": "dapr",
+            "configurations": [
+                "Debug publisher",
+                "Debug consumer",
+                "Debug worker"
+            ],
+            "postDebugTask": "dapr-stop"
         }
     ]
 }

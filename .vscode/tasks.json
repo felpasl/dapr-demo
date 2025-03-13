@@ -4,7 +4,37 @@
 		{
 			"label": "dapr",
 			"type": "dapr",
-			"runFile": "dapr.yaml"
-		}
+			"runFile": "dapr.yaml",
+			"isBackground": true,
+			"problemMatcher": {
+				"pattern": [
+				{
+					"regexp": ".",
+					"file": 1,
+					"location": 2,
+					"message": 3
+				}
+				],
+				"background": {
+				"beginsPattern": "^.*Validating config and starting*",
+				"endsPattern": "^.*5020*"
+				}
+			},
+		},
+		{
+			"label": "dapr-stop",
+			"type": "shell",
+			"command": "dapr",
+			"args": [
+				"stop",
+				"-f",
+				"dapr.yaml"
+			],
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			},
+			"problemMatcher": []
+		}		
 	]
 }
