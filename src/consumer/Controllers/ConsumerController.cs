@@ -1,7 +1,7 @@
-using Microsoft.AspNetCore.Mvc;
-using Dapr;
 using Consumer.Models;
 using Consumer.Services;
+using Dapr;
+using Microsoft.AspNetCore.Mvc;
 using Serilog;
 
 namespace Consumer.Controllers
@@ -10,18 +10,19 @@ namespace Consumer.Controllers
     [Route("[controller]")]
     public class ConsumerController : ControllerBase
     {
-        private readonly IConsumerService _consumeService;
-        private readonly IHttpContextAccessor _httpContextAccessor;
-        
+        private readonly IConsumerService consumeService;
+        private readonly IHttpContextAccessor httpContextAccessor;
+
         private const string TRACEPARENT = "traceparent";
         private const string TRACESTATE = "tracestate";
 
         public ConsumerController(
-            IConsumerService consumeService, 
-            IHttpContextAccessor httpContextAccessor)
+            IConsumerService consumeService,
+            IHttpContextAccessor httpContextAccessor
+        )
         {
-            _consumeService = consumeService;
-            _httpContextAccessor = httpContextAccessor;
+            this.consumeService = consumeService;
+            this.httpContextAccessor = httpContextAccessor;
         }
 
         [HttpPost("/processing")]
@@ -31,19 +32,24 @@ namespace Consumer.Controllers
             Dictionary<string, string> metadata = new Dictionary<string, string>();
 
             // Get the traceparent header from the current request context
-            var httpContext = _httpContextAccessor.HttpContext;
-            if (httpContext != null && httpContext.Request.Headers.TryGetValue(TRACEPARENT, out var parentValue))
+            var httpContext = this.httpContextAccessor.HttpContext;
+            if (
+                httpContext != null
+                && httpContext.Request.Headers.TryGetValue(TRACEPARENT, out var parentValue)
+            )
             {
                 metadata.Add("cloudevent.traceparent", parentValue.ToString());
             }
-            if (httpContext != null && httpContext.Request.Headers.TryGetValue(TRACESTATE, out var stateValue))
+            if (
+                httpContext != null
+                && httpContext.Request.Headers.TryGetValue(TRACESTATE, out var stateValue)
+            )
             {
                 metadata.Add("cloudevent.tracestate", stateValue.ToString());
             }
 
+            await this.consumeService.ProcessNewWorkAsync(process, metadata);
 
-            await _consumeService.ProcessNewWorkAsync(process, metadata);
-            
             return Ok();
         }
     }

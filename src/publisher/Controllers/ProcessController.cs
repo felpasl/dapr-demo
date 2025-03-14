@@ -2,7 +2,6 @@ using Dapr;
 using Microsoft.AspNetCore.Mvc;
 using Publisher.Models;
 using Publisher.Services;
-using Serilog;
 
 namespace Publisher.Controllers;
 
@@ -10,15 +9,21 @@ namespace Publisher.Controllers;
 [Route("[controller]")]
 public class ProcessController : ControllerBase
 {
-    private readonly IProcessService _processService;
-    private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly ILogger<ProcessController> logger;
+    private readonly IProcessService processService;
+    private readonly IHttpContextAccessor httpContextAccessor;
     private const string TRACEPARENT = "traceparent";
     private const string TRACESTATE = "tracestate";
 
-    public ProcessController(IProcessService processService, IHttpContextAccessor httpContextAccessor)
+    public ProcessController(
+        IProcessService processService,
+        IHttpContextAccessor httpContextAccessor,
+        ILogger<ProcessController> logger
+    )
     {
-        _processService = processService;
-        _httpContextAccessor = httpContextAccessor;
+        this.processService = processService;
+        this.httpContextAccessor = httpContextAccessor;
+        this.logger = logger;
     }
 
     [HttpGet]
@@ -26,27 +31,32 @@ public class ProcessController : ControllerBase
     public async Task<IActionResult> StartProcess()
     {
         Dictionary<string, string> metadata = new Dictionary<string, string>();
-        var httpContext = _httpContextAccessor.HttpContext;
-        if (httpContext != null && httpContext.Request.Headers.TryGetValue(TRACEPARENT, out var parentValue))
+        var httpContext = httpContextAccessor.HttpContext;
+        if (
+            httpContext != null
+            && httpContext.Request.Headers.TryGetValue(TRACEPARENT, out var parentValue)
+        )
         {
             metadata.Add("cloudevent.traceparent", parentValue.ToString());
         }
-        if (httpContext != null && httpContext.Request.Headers.TryGetValue(TRACESTATE, out var stateValue))
+        if (
+            httpContext != null
+            && httpContext.Request.Headers.TryGetValue(TRACESTATE, out var stateValue)
+        )
         {
             metadata.Add("cloudevent.tracestate", stateValue.ToString());
         }
 
-        var result = await _processService.StartProcessAsync(metadata);
+        var result = await processService.StartProcessAsync(metadata);
         return Ok(result);
     }
 
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [Topic("kafka-pubsub", "processCompleted")]
-    public  IActionResult ProcessFinished(ProcessFinished process)
+    public IActionResult ProcessFinished(ProcessFinished process)
     {
-        Log.Information("Process finished: {id}", process.Id);
+        logger.LogInformation("Process finished: {@process}", process);
         return Ok();
     }
-
 }

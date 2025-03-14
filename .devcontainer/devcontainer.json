@@ -13,6 +13,7 @@
 	"customizations": {
 		"vscode": {
 			"extensions": [
+				"csharpier.csharpier-vscode",
 				"ms-azuretools.vscode-dapr",
 				"ms-azuretools.vscode-docker",
 				"ms-dotnettools.csdevkit",

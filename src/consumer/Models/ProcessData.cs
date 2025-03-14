@@ -10,7 +10,7 @@ namespace Consumer.Models
             EndAt = null;
             Status = "Started";
         }
-        
+
         public Guid Id { get; set; }
         public DateTime StartAt { get; set; }
         public string Name { get; set; }

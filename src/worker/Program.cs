@@ -1,15 +1,22 @@
 using Dapr;
 using Dapr.Client;
 using Serilog;
+using Serilog.Events;
 using Worker.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure Serilog
-var logger = new LoggerConfiguration()
-    .WriteTo.Console()
+// Setup Serilog
+Log.Logger = new LoggerConfiguration()
+    .Enrich.FromLogContext()
+    .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+    .WriteTo.Console(
+        outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}]<s:{SourceContext}> {Message:lj} {NewLine}{Exception}",
+        restrictedToMinimumLevel: LogEventLevel.Information
+    )
     .CreateLogger();
-Log.Logger = logger;
+
+builder.Logging.AddSerilog(Log.Logger);
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -34,7 +41,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
 
 // Use controllers instead of individual endpoint mapping
 app.MapControllers();

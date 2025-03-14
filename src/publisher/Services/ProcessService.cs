@@ -1,27 +1,32 @@
 using Dapr.Client;
 using Publisher.Models;
-using Serilog;
 
 namespace Publisher.Services;
 
 public class ProcessService : IProcessService
 {
-    private readonly DaprClient _daprClient;
+    private readonly ILogger<ProcessService> logger;
+    private readonly DaprClient daprClient;
 
-    public ProcessService(DaprClient daprClient)
+    public ProcessService(DaprClient daprClient, ILogger<ProcessService> logger)
     {
-        _daprClient = daprClient;
+        this.daprClient = daprClient;
+        this.logger = logger;
     }
 
     public async Task<ProcessData> StartProcessAsync(Dictionary<string, string> metadata)
     {
         var process = new ProcessData(Guid.NewGuid(), DateTime.Now, "ProcessData");
-        
-        await _daprClient.PublishEventAsync<ProcessData>("kafka-pubsub", "newProcess", process, metadata);
 
-        var serializedProcess = System.Text.Json.JsonSerializer.Serialize(process);
-        Log.Information("New process started: {process}", serializedProcess);
-        
+        await daprClient.PublishEventAsync<ProcessData>(
+            "kafka-pubsub",
+            "newProcess",
+            process,
+            metadata
+        );
+
+        this.logger.LogInformation("New process started: {@process}", process);
+
         return process;
     }
 }
