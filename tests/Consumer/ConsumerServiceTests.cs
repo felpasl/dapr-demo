@@ -35,8 +35,7 @@ public class ConsumerServiceTests
 
         List<WorkTodo> capturedWorkItems = new List<WorkTodo>();
 
-        this.mockDaprClient
-            .Setup(c =>
+        this.mockDaprClient.Setup(c =>
                 c.PublishEventAsync<ProcessData>(
                     It.IsAny<string>(),
                     It.IsAny<string>(),
@@ -47,8 +46,7 @@ public class ConsumerServiceTests
             )
             .Returns(Task.CompletedTask);
 
-        this.mockDaprClient
-            .Setup(c =>
+        this.mockDaprClient.Setup(c =>
                 c.PublishEventAsync<WorkTodo>(
                     It.IsAny<string>(),
                     It.IsAny<string>(),
@@ -117,8 +115,7 @@ public class ConsumerServiceTests
 
         List<WorkTodo> capturedWorkItems = new List<WorkTodo>();
 
-        this.mockDaprClient
-            .Setup(c =>
+        this.mockDaprClient.Setup(c =>
                 c.PublishEventAsync<ProcessData>(
                     It.IsAny<string>(),
                     It.IsAny<string>(),
@@ -129,8 +126,7 @@ public class ConsumerServiceTests
             )
             .Returns(Task.CompletedTask);
 
-        this.mockDaprClient
-            .Setup(c =>
+        this.mockDaprClient.Setup(c =>
                 c.PublishEventAsync<WorkTodo>(
                     It.IsAny<string>(),
                     It.IsAny<string>(),
@@ -181,8 +177,7 @@ public class ConsumerServiceTests
 
         List<WorkTodo> capturedWorkItems = new List<WorkTodo>();
 
-        this.mockDaprClient
-            .Setup(c =>
+        this.mockDaprClient.Setup(c =>
                 c.PublishEventAsync(
                     It.IsAny<string>(),
                     It.IsAny<string>(),
@@ -193,8 +188,7 @@ public class ConsumerServiceTests
             )
             .Returns(Task.CompletedTask);
 
-        this.mockDaprClient
-            .Setup(c =>
+        this.mockDaprClient.Setup(c =>
                 c.PublishEventAsync<WorkTodo>(
                     It.IsAny<string>(),
                     It.IsAny<string>(),
