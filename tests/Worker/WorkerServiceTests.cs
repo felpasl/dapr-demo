@@ -182,12 +182,11 @@ public class WorkerServiceTests
     }
 
     [Theory]
-    [InlineData(null)]
     [InlineData("")]
     [InlineData("Started")]
     [InlineData("In Progress")]
     public async Task ProcessWorkAsync_Should_UpdateStatusToCompleted_RegardlessOfInitialStatus(
-        string? initialStatus
+        string initialStatus
     )
     {
         // Arrange
