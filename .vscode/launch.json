@@ -2,26 +2,26 @@
     "configurations": [
 
         {
-            "name": "Debug publisher",
+            "name": "Debug order-api",
             "type": "coreclr",
             "request": "attach",
-            "processName": "publisher",
+            "processName": "order-api",
             "preLaunchTask": "dapr",
             "postDebugTask": "dapr-stop"
         },
         {
-            "name": "Debug consumer",
+            "name": "Debug order-processing",
             "type": "coreclr",
             "request": "attach",
-            "processName": "consumer",
+            "processName": "order-processing",
             "preLaunchTask": "dapr",
             "postDebugTask": "dapr-stop"
         },
         {
-            "name": "Debug worker",
+            "name": "Debug order-item-processing",
             "type": "coreclr",
             "request": "attach",
-            "processName": "worker",
+            "processName": "order-item-processing",
             "preLaunchTask": "dapr",
             "postDebugTask": "dapr-stop"
         }

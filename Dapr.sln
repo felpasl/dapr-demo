@@ -4,11 +4,11 @@ VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72D-47B6-A68D-7590B98EB39B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "worker", "src\worker\worker.csproj", "{E6A433DD-72AA-EC69-A86F-D22EF3B3C06C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "order-item-processing", "src\order-item-processing\order-item-processing.csproj", "{E6A433DD-72AA-EC69-A86F-D22EF3B3C06C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "consumer", "src\consumer\consumer.csproj", "{908E06E9-7540-48F6-4C33-6B73330724C3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "order-processing", "src\order-processing\order-processing.csproj", "{908E06E9-7540-48F6-4C33-6B73330724C3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "publisher", "src\publisher\publisher.csproj", "{B53A3F93-644F-077D-263C-2A9461829575}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "order-api", "src\order-api\order-api.csproj", "{B53A3F93-644F-077D-263C-2A9461829575}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{A5437BCC-1DDD-4A1F-B4EC-B593E3802113}"
 EndProject

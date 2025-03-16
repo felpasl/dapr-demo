@@ -25,9 +25,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\publisher\publisher.csproj" />
-    <ProjectReference Include="..\src\consumer\consumer.csproj" />
-    <ProjectReference Include="..\src\worker\worker.csproj" />
+    <ProjectReference Include="..\src\order-api\order-api.csproj" />
+    <ProjectReference Include="..\src\order-processing\order-processing.csproj" />
+    <ProjectReference Include="..\src\order-item-processing\order-item-processing.csproj" />
   </ItemGroup>
 
 </Project>

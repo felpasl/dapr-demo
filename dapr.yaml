@@ -2,15 +2,15 @@ version: 1
 common:
   resourcesPath: ./components/
 apps:
-  - appID: publisher
-    appDirPath: ./src/publisher
+  - appID: order-api
+    appDirPath: ./src/order-api
     appPort: 5279
     command: ["dotnet", "watch"]
-  - appID: cosumer
-    appDirPath: ./src/consumer
+  - appID: order-processing
+    appDirPath: ./src/order-processing
     appPort: 5121
     command: ["dotnet", "watch"]
-  - appID: worker
-    appDirPath: ./src/worker
+  - appID: order-item-processing
+    appDirPath: ./src/order-item-processing
     appPort: 5020
     command: ["dotnet", "watch"]
