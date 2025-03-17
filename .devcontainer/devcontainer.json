@@ -17,7 +17,8 @@
 				"ms-azuretools.vscode-dapr",
 				"ms-azuretools.vscode-docker",
 				"ms-dotnettools.csdevkit",
-				"formulahendry.dotnet-test-explorer"
+				"formulahendry.dotnet-test-explorer",
+				"bierner.markdown-mermaid"
 			]
 		}
 	},

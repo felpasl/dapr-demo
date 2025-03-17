@@ -37,6 +37,14 @@ This project demonstrates how to use Dapr (Distributed Application Runtime) for 
 ## The Application
 
 ``` mermaid
+flowchart TD
+    order-api --> newOrder@{ shape: rounded }
+    newOrder -.-> order-processing
+    order-processing -->|0 or N| orderItem@{ shape: rounded }
+    orderItem -.-> order-item-processing
+    order-item-processing -->|last of N| orderCompleted@{ shape: rounded }
+    orderCompleted -.-> order-api
+    order-item-processing --> orderItemCompleted@{ shape: rounded }
 ```
 
 ## Troubleshooting
