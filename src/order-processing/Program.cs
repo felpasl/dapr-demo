@@ -1,11 +1,11 @@
-using OrderProcessing.Controllers;
-using OrderProcessing.Models;
-using OrderProcessing.Services;
 using Dapr;
 using Dapr.Client;
 using Google.Api;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.Extensions.Logging;
+using OrderProcessing.Controllers;
+using OrderProcessing.Models;
+using OrderProcessing.Services;
 using Serilog;
 using Serilog.Events;
 
@@ -32,7 +32,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddControllers().AddDapr();
 
 // Register services for DI
-builder.Services.AddScoped<IOrderProcessingService, OrderProcessingService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
 
 var app = builder.Build();
 

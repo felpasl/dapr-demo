@@ -1,9 +1,8 @@
 using OrderItemProcessing.Models;
 
-namespace OrderItemProcessing.Services
+namespace OrderItemProcessing.Services;
+
+public interface IOrderItemService
 {
-    public interface IOrderItemService
-    {
-        Task ProcessWorkAsync(Models.OrderItem work, Dictionary<string, string> metadata);
-    }
+    Task ProcessWorkAsync(Models.OrderItem work, Dictionary<string, string> metadata);
 }

@@ -31,11 +31,12 @@
             "name": "Debug all",
             "preLaunchTask": "dapr",
             "configurations": [
-                "Debug publisher",
-                "Debug consumer",
-                "Debug worker"
+            "Debug order-api",
+            "Debug order-processing",
+            "Debug order-item-processing"
             ],
-            "postDebugTask": "dapr-stop"
+            "stopAll": true,
+            "postDebugTask": "dapr-stop",    
         }
     ]
 }

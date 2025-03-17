@@ -7,15 +7,18 @@ using Xunit;
 
 namespace Tests.OrderItemProcessing;
 
-public class WorkerServiceTests
+public class OrderItemServiceTests
 {
     private readonly Mock<DaprClient> _mockDaprClient;
     private readonly OrderItemService _workerService;
 
-    public WorkerServiceTests()
+    public OrderItemServiceTests()
     {
         _mockDaprClient = new Mock<DaprClient>();
-        _workerService = new OrderItemService(_mockDaprClient.Object, Mock.Of<ILogger<OrderItemService>>());
+        _workerService = new OrderItemService(
+            _mockDaprClient.Object,
+            Mock.Of<ILogger<OrderItemService>>()
+        );
     }
 
     [Fact]
@@ -246,7 +249,7 @@ public class WorkerServiceTests
 
         var metadata = new Dictionary<string, string> { { "traceid", "test-trace-id" } };
 
-        ProcessFinished? capturedProcessFinished = null;
+        OrderCompleted? capturedProcessFinished = null;
 
         _mockDaprClient
             .Setup(c =>
@@ -262,10 +265,10 @@ public class WorkerServiceTests
 
         _mockDaprClient
             .Setup(c =>
-                c.PublishEventAsync<ProcessFinished>(
+                c.PublishEventAsync<OrderCompleted>(
                     It.IsAny<string>(),
                     It.IsAny<string>(),
-                    It.IsAny<ProcessFinished>(),
+                    It.IsAny<OrderCompleted>(),
                     It.IsAny<Dictionary<string, string>>(),
                     It.IsAny<CancellationToken>()
                 )
@@ -273,7 +276,7 @@ public class WorkerServiceTests
             .Callback<
                 string,
                 string,
-                ProcessFinished,
+                OrderCompleted,
                 Dictionary<string, string>,
                 CancellationToken
             >((_, _, process, _, _) => capturedProcessFinished = process)
@@ -299,10 +302,10 @@ public class WorkerServiceTests
         // Verify process completed event was published
         _mockDaprClient.Verify(
             c =>
-                c.PublishEventAsync<ProcessFinished>(
+                c.PublishEventAsync<OrderCompleted>(
                     "kafka-pubsub",
                     "processCompleted",
-                    It.IsAny<ProcessFinished>(),
+                    It.IsAny<OrderCompleted>(),
                     metadata,
                     It.IsAny<CancellationToken>()
                 ),
@@ -366,10 +369,10 @@ public class WorkerServiceTests
         // Verify process completed event was NOT published
         _mockDaprClient.Verify(
             c =>
-                c.PublishEventAsync<ProcessFinished>(
+                c.PublishEventAsync<OrderCompleted>(
                     It.IsAny<string>(),
                     It.IsAny<string>(),
-                    It.IsAny<ProcessFinished>(),
+                    It.IsAny<OrderCompleted>(),
                     It.IsAny<Dictionary<string, string>>(),
                     It.IsAny<CancellationToken>()
                 ),

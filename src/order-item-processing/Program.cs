@@ -1,8 +1,8 @@
 using Dapr;
 using Dapr.Client;
+using OrderItemProcessing.Services;
 using Serilog;
 using Serilog.Events;
-using OrderItemProcessing.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 

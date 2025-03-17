@@ -32,7 +32,12 @@ This project demonstrates how to use Dapr (Distributed Application Runtime) for 
 
 2. Access the Swagger UI:
    - Open http://localhost:5279/swagger/index.html in your browser
-   - Call a GET /process endpoint to start the sample processing
+   - Call a Post /Order/start endpoint to start the sample processing
+
+## The Application
+
+``` mermaid
+```
 
 ## Troubleshooting
 

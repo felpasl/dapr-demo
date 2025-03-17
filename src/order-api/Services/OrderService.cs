@@ -16,13 +16,7 @@ public class OrderService : IOrderService
 
     public async Task<Order> StartProcessAsync(Order order, Dictionary<string, string> metadata)
     {
-
-        await daprClient.PublishEventAsync<Order>(
-            "kafka-pubsub",
-            "newOrder",
-            order,
-            metadata
-        );
+        await daprClient.PublishEventAsync<Order>("kafka-pubsub", "newOrder", order, metadata);
 
         this.logger.LogInformation("New Order recieved: {@process}", order);
 

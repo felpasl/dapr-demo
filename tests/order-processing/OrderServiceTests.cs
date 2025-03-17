@@ -1,23 +1,23 @@
-using OrderProcessing.Models;
-using OrderProcessing.Services;
 using Dapr.Client;
 using Microsoft.Extensions.Logging;
 using Moq;
+using OrderProcessing.Models;
+using OrderProcessing.Services;
 using Xunit;
 
 namespace Tests.OrderProcessing;
 
-public class OrderProcessingServiceTests
+public class OrderServiceTests
 {
     private readonly Mock<DaprClient> mockDaprClient;
-    private readonly OrderProcessingService consumeService;
+    private readonly OrderService consumeService;
 
-    public OrderProcessingServiceTests()
+    public OrderServiceTests()
     {
         this.mockDaprClient = new Mock<DaprClient>();
-        this.consumeService = new OrderProcessingService(
+        this.consumeService = new OrderService(
             this.mockDaprClient.Object,
-            Mock.Of<ILogger<OrderProcessingService>>()
+            Mock.Of<ILogger<OrderService>>()
         );
     }
 
@@ -31,7 +31,8 @@ public class OrderProcessingServiceTests
             { "cloudevent.traceparent", "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01" },
         };
 
-        List<global::OrderProcessing.Models.OrderItem> capturedWorkItems = new List<global::OrderProcessing.Models.OrderItem>();
+        List<global::OrderProcessing.Models.OrderItem> capturedWorkItems =
+            new List<global::OrderProcessing.Models.OrderItem>();
 
         this.mockDaprClient.Setup(c =>
                 c.PublishEventAsync<Order>(
@@ -53,13 +54,17 @@ public class OrderProcessingServiceTests
                     It.IsAny<CancellationToken>()
                 )
             )
-            .Callback<string, string, global::OrderProcessing.Models.OrderItem, Dictionary<string, string>, CancellationToken>(
-                (_, _, item, _, _) => capturedWorkItems.Add(item)
-            )
+            .Callback<
+                string,
+                string,
+                global::OrderProcessing.Models.OrderItem,
+                Dictionary<string, string>,
+                CancellationToken
+            >((_, _, item, _, _) => capturedWorkItems.Add(item))
             .Returns(Task.CompletedTask);
 
         // Act
-        await this.consumeService.ProcessNewWorkAsync(process, metadata);
+        await this.consumeService.NewOrderAsync(process, metadata);
 
         // Assert
         this.mockDaprClient.Verify(
@@ -108,7 +113,8 @@ public class OrderProcessingServiceTests
         var process = new Order(Guid.NewGuid(), DateTime.Now, 2, "Test Process");
         var metadata = new Dictionary<string, string>();
 
-        List<global::OrderProcessing.Models.OrderItem> capturedWorkItems = new List<global::OrderProcessing.Models.OrderItem>();
+        List<global::OrderProcessing.Models.OrderItem> capturedWorkItems =
+            new List<global::OrderProcessing.Models.OrderItem>();
 
         this.mockDaprClient.Setup(c =>
                 c.PublishEventAsync(
@@ -130,13 +136,17 @@ public class OrderProcessingServiceTests
                     It.IsAny<CancellationToken>()
                 )
             )
-            .Callback<string, string, global::OrderProcessing.Models.OrderItem, Dictionary<string, string>, CancellationToken>(
-                (_, _, item, _, _) => capturedWorkItems.Add(item)
-            )
+            .Callback<
+                string,
+                string,
+                global::OrderProcessing.Models.OrderItem,
+                Dictionary<string, string>,
+                CancellationToken
+            >((_, _, item, _, _) => capturedWorkItems.Add(item))
             .Returns(Task.CompletedTask);
 
         // Act
-        await this.consumeService.ProcessNewWorkAsync(process, metadata);
+        await this.consumeService.NewOrderAsync(process, metadata);
 
         // Assert
         Assert.Equal(2, capturedWorkItems.Count);

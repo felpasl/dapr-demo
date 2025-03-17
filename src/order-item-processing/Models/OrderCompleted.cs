@@ -1,8 +1,8 @@
 namespace OrderItemProcessing.Models;
 
-public class ProcessFinished
+public class OrderCompleted
 {
-    public ProcessFinished(Guid id, DateTime finishedAt, string status)
+    public OrderCompleted(Guid id, DateTime finishedAt, string status)
     {
         Id = id;
         FinishedAt = finishedAt;
