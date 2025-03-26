@@ -44,7 +44,7 @@ jobs:
 
     strategy:
       matrix:
-        service: [consumer, publisher, worker]
+        service: [order-processing, order-api, order-item-processing]
         include:
           - service: order-processing
             dockerfile: ./src/order-processing/Dockerfile
