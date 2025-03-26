@@ -70,7 +70,7 @@ public class OrderItemServiceTests
             c =>
                 c.PublishEventAsync<OrderItem>(
                     "kafka-pubsub",
-                    "workCompleted",
+                    "orderItemCompleted",
                     It.IsAny<OrderItem>(),
                     metadata,
                     It.IsAny<CancellationToken>()
@@ -124,7 +124,7 @@ public class OrderItemServiceTests
             c =>
                 c.PublishEventAsync<OrderItem>(
                     "kafka-pubsub",
-                    "workCompleted",
+                    "orderItemCompleted",
                     It.Is<OrderItem>(w => w.Status == "Completed"),
                     It.IsAny<Dictionary<string, string>>(),
                     It.IsAny<CancellationToken>()
@@ -291,7 +291,7 @@ public class OrderItemServiceTests
             c =>
                 c.PublishEventAsync<OrderItem>(
                     "kafka-pubsub",
-                    "workCompleted",
+                    "orderItemCompleted",
                     It.Is<OrderItem>(w => w.Status == "Completed"),
                     metadata,
                     It.IsAny<CancellationToken>()
@@ -304,7 +304,7 @@ public class OrderItemServiceTests
             c =>
                 c.PublishEventAsync<OrderCompleted>(
                     "kafka-pubsub",
-                    "processCompleted",
+                    "orderCompleted",
                     It.IsAny<OrderCompleted>(),
                     metadata,
                     It.IsAny<CancellationToken>()
@@ -358,7 +358,7 @@ public class OrderItemServiceTests
             c =>
                 c.PublishEventAsync<OrderItem>(
                     "kafka-pubsub",
-                    "workCompleted",
+                    "orderItemCompleted",
                     It.Is<OrderItem>(w => w.Status == "Completed"),
                     metadata,
                     It.IsAny<CancellationToken>()
