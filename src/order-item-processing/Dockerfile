@@ -11,4 +11,4 @@ RUN dotnet publish -o out
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /App
 COPY --from=build /app/out/ .
-ENTRYPOINT ["dotnet", "worker.dll"]
+ENTRYPOINT ["dotnet", "order-item-processing.dll"]
