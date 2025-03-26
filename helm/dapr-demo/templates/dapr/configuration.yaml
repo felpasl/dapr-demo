@@ -5,7 +5,6 @@ apiVersion: dapr.io/v1alpha1
 kind: Configuration
 metadata:
   name: {{ .name }}
-  namespace: {{ .namespace | default "default" }}
   labels:
     {{- include "dapr_demo.labels" $ | nindent 4 }}
 spec:
