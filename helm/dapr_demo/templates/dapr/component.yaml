@@ -1,0 +1,44 @@
+{{- if .Values.daprComponents }}
+{{- range .Values.daprComponents }}
+---
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: {{ .name }}
+  namespace: {{ .namespace | default "default" }}
+  labels:
+    {{- include "dapr_demo.labels" $ | nindent 4 }}
+  {{- with .annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .type }}
+  version: {{ .version | default "v1" }}
+  metadata:
+  {{- if .metadata }}
+  {{- range .metadata }}
+    - name: {{ .name }}
+      {{- if .value }}
+      value: {{ .value | quote }}
+      {{- end }}
+      {{- if .secretKeyRef }}
+      secretKeyRef:
+        name: {{ .secretKeyRef.name }}
+        key: {{ .secretKeyRef.key }}
+      {{- end }}
+  {{- end }}
+  {{- end }}
+  {{- with .auth }}
+  auth:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .scopes }}
+  scopes:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .initTimeout }}
+  initTimeout: {{ . | quote }}
+  {{- end }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,226 @@
+# Default values for dapr_demo.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Global replicaCount (will be used as default if not specified in deployments)
+replicaCount: 1
+
+# Global image settings (will be used as defaults if not specified in deployments)
+image:
+  repository: nginx
+  pullPolicy: IfNotPresent
+  tag: ""
+
+# This is for the secrets for pulling an image from a private repository
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+# This section builds out the service account
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+# Pod annotations and labels
+podAnnotations: {}
+podLabels: {}
+podSecurityContext: {}
+securityContext: {}
+
+# Global service settings (will be used as defaults if not specified in deployments)
+service:
+  type: ClusterIP
+  port: 80
+
+# Global ingress settings (will be used as defaults if not specified in deployments)
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+
+# Global resources
+resources: {}
+
+# Global probes
+livenessProbe:
+  httpGet:
+    path: /
+    port: http
+readinessProbe:
+  httpGet:
+    path: /
+    port: http
+
+# Global autoscaling
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+
+# Volumes
+volumes: []
+volumeMounts: []
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# Dapr Configuration resources
+daprConfig:
+  # Example tracing configuration
+  - name: tracing
+    namespace: default
+    tracing:
+      samplingRate: "1"
+      stdout: true
+      otel:
+        endpointAddress: "otel-collector-opentelemetry-collector.devops.svc.cluster.local:4317"
+        isSecure: false
+        protocol: grpc
+  # Example with additional configurations
+  # - name: appconfig
+  #   namespace: default
+  #   tracing:
+  #     samplingRate: "0.5"
+  #     stdout: false
+  #   mtls:
+  #     enabled: true
+  #     workloadCertTTL: "24h"
+  #   metrics:
+  #     enabled: true
+
+# Dapr Component resources
+daprComponents:
+  # Example state store component using Redis
+  - name: statestore
+    namespace: default
+    type: state.redis
+    version: v1
+    metadata:
+      - name: redisHost
+        value: redis-master:6379
+      - name: redisPassword
+        secretKeyRef:
+          name: redis
+          key: redis-password
+    auth:
+      secretStore: kubernetes
+
+  # Example pubsub component using Kafka
+  - name: kafka-pubsub
+    namespace: default
+    type: pubsub.kafka
+    version: v1
+    metadata:
+      - name: brokers
+        value: "kafka.default:9092"
+      - name: authtype
+        value: password
+      - name: disableTls
+        value: "true"
+      - name: saslUsername
+        value: "user1"
+      - name: saslPassword
+        secretKeyRef:
+          name: kafka-user-passwords
+          key: client-passwords
+    # Optional scopes to limit which apps can use this component
+    # scopes:
+    #   - app1
+    #   - app2
+
+# Adding secrets configuration
+secrets:
+  - name: redis
+    namespace: default
+    data:
+      redis-password: "your-redis-password"
+  - name: kafka-user-passwords
+    namespace: default
+    data:
+      client-passwords: "your-kafka-password"
+
+# Multiple deployments configuration
+deployments:
+  - name: order-api
+    replicaCount: 1
+    image:
+      repository: order-api-image
+      tag: "latest"
+      pullPolicy: IfNotPresent
+    service:
+      type: ClusterIP
+      port: 8080
+    podAnnotations: 
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "order-api"
+        dapr.io/app-port: "8080"
+        dapr.io/config: "tracing"
+    ingress:
+      enabled: false
+      className: ""
+      annotations: {}
+      hosts:
+        - host: order-api.local
+          paths:
+            - path: /
+              pathType: ImplementationSpecific
+      tls: []
+
+  - name: order-processing
+    replicaCount: 1
+    image:
+      repository: order-processing-image
+      tag: "latest"
+      pullPolicy: IfNotPresent
+    service:
+      type: ClusterIP
+      port: 8080
+    podAnnotations: 
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "order-processing"
+        dapr.io/app-port: "8080"
+        dapr.io/config: "tracing"
+    ingress:
+      enabled: false
+      className: ""
+      annotations: {}
+      hosts:
+        - host: order-processing.local
+          paths:
+            - path: /
+              pathType: ImplementationSpecific
+      tls: []
+
+  - name: order-item-processing
+    replicaCount: 1
+    image:
+      repository: order-item-processing-image
+      tag: "latest"
+      pullPolicy: IfNotPresent
+    service:
+      type: ClusterIP
+      port: 8080
+    podAnnotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "order-item-processing"
+        dapr.io/app-port: "8080"
+        dapr.io/config: "tracing"
+    ingress:
+      enabled: false
+      className: ""
+      annotations: {}
+      hosts:
+        - host: order-item-processing.local
+          paths:
+            - path: /
+              pathType: ImplementationSpecific
+      tls: []

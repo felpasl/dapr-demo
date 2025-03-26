@@ -1,0 +1,56 @@
+{{- if .Values.daprConfig }}
+{{- range .Values.daprConfig }}
+---
+apiVersion: dapr.io/v1alpha1
+kind: Configuration
+metadata:
+  name: {{ .name }}
+  namespace: {{ .namespace | default "default" }}
+  labels:
+    {{- include "dapr_demo.labels" $ | nindent 4 }}
+spec:
+  tracing:
+    samplingRate: {{ .tracing.samplingRate | default "1" | quote }}
+    stdout: {{ .tracing.stdout | default true }}
+    {{- if .tracing.otel }}
+    otel:
+      endpointAddress: {{ .tracing.otel.endpointAddress | quote }}
+      isSecure: {{ .tracing.otel.isSecure | default false }}
+      protocol: {{ .tracing.otel.protocol | default "grpc" }}
+    {{- end }}
+  {{- with .mtls }}
+  mtls:
+    enabled: {{ .enabled | default false }}
+    {{- if .workloadCertTTL }}
+    workloadCertTTL: {{ .workloadCertTTL | quote }}
+    {{- end }}
+    {{- if .allowedClockSkew }}
+    allowedClockSkew: {{ .allowedClockSkew | quote }}
+    {{- end }}
+  {{- end }}
+  {{- with .metrics }}
+  metrics:
+    enabled: {{ .enabled | default true }}
+    {{- if .rules }}
+    rules:
+      {{- toYaml .rules | nindent 6 }}
+    {{- end }}
+  {{- end }}
+  {{- with .accessControl }}
+  accessControl:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .features }}
+  features:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .secrets }}
+  secrets:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .api }}
+  api:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}
+{{- end }}
