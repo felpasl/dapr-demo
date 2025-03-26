@@ -140,11 +140,9 @@ daprComponents:
 # Adding secrets configuration
 secrets:
   - name: redis
-    namespace: default
     data:
       redis-password: "your-redis-password"
   - name: kafka-user-passwords
-    namespace: default
     data:
       client-passwords: "your-kafka-password"
 
