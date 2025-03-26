@@ -46,15 +46,15 @@ jobs:
       matrix:
         service: [consumer, publisher, worker]
         include:
-          - service: consumer
-            dockerfile: ./src/consumer/Dockerfile
-            context: ./src/consumer/
-          - service: publisher
-            dockerfile: ./src/publisher/Dockerfile
-            context: ./src/publisher/
-          - service: worker
-            dockerfile: ./src/worker/Dockerfile
-            context: ./src/worker/
+          - service: order-processing
+            dockerfile: ./src/order-processing/Dockerfile
+            context: ./src/order-processing/
+          - service: order-api
+            dockerfile: ./src/order-api/Dockerfile
+            context: ./src/order-api/
+          - service: order-item-processing
+            dockerfile: ./src/order-item-processing/Dockerfile
+            context: ./src/order-item-processing/
 
     steps:
       - name: Checkout repository
