@@ -153,9 +153,9 @@ deployments:
   - name: order-api
     replicaCount: 1
     image:
-      repository: order-api-image
+      repository: ghcr.io/felpasl/dapr-demo/order-api
       tag: "latest"
-      pullPolicy: IfNotPresent
+      pullPolicy: Always
     service:
       type: ClusterIP
       port: 8080
@@ -163,13 +163,13 @@ deployments:
         dapr.io/enabled: "true"
         dapr.io/app-id: "order-api"
         dapr.io/app-port: "8080"
-        dapr.io/config: "tracing"
+        #dapr.io/config: "tracing"
     ingress:
       enabled: false
       className: ""
       annotations: {}
       hosts:
-        - host: order-api.local
+        - host: order-api.localhost
           paths:
             - path: /
               pathType: ImplementationSpecific
@@ -178,9 +178,9 @@ deployments:
   - name: order-processing
     replicaCount: 1
     image:
-      repository: order-processing-image
+      repository: ghcr.io/felpasl/dapr-demo/order-processing
       tag: "latest"
-      pullPolicy: IfNotPresent
+      pullPolicy: Always
     service:
       type: ClusterIP
       port: 8080
@@ -188,13 +188,13 @@ deployments:
         dapr.io/enabled: "true"
         dapr.io/app-id: "order-processing"
         dapr.io/app-port: "8080"
-        dapr.io/config: "tracing"
+        #dapr.io/config: "tracing"
     ingress:
       enabled: false
       className: ""
       annotations: {}
       hosts:
-        - host: order-processing.local
+        - host: order-processing.localhost
           paths:
             - path: /
               pathType: ImplementationSpecific
@@ -203,9 +203,9 @@ deployments:
   - name: order-item-processing
     replicaCount: 1
     image:
-      repository: order-item-processing-image
+      repository: ghcr.io/felpasl/dapr-demo/order-item-processing
       tag: "latest"
-      pullPolicy: IfNotPresent
+      pullPolicy: Always
     service:
       type: ClusterIP
       port: 8080
@@ -213,13 +213,13 @@ deployments:
         dapr.io/enabled: "true"
         dapr.io/app-id: "order-item-processing"
         dapr.io/app-port: "8080"
-        dapr.io/config: "tracing"
+        #dapr.io/config: "tracing"
     ingress:
       enabled: false
       className: ""
       annotations: {}
       hosts:
-        - host: order-item-processing.local
+        - host: order-item-processing.localhost
           paths:
             - path: /
               pathType: ImplementationSpecific
