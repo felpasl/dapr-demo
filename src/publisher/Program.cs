@@ -5,6 +5,26 @@ using Publisher.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Setup Serilog
+Log.Logger = new LoggerConfiguration()
+    .Enrich.FromLogContext()
+    .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+    .WriteTo.Console(
+        outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}]<s:{SourceContext}> {Message:lj} {NewLine}{Exception}",
+        restrictedToMinimumLevel: LogEventLevel.Information
+    )
+    .WriteTo.Logger(bl =>
+        bl.Filter.ByIncludingOnly(le => le.Properties.ContainsKey("BusinessEvent"))
+            .WriteTo.File(
+                "logs/business-events.log",
+                rollingInterval: RollingInterval.Day,
+                outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}]<s:{SourceContext}> {Message:lj} {Properties:j} {NewLine}{Exception}"
+            )
+    )
+    .CreateLogger();
+
+builder.Logging.ClearProviders().AddSerilog(Log.Logger);
+
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
