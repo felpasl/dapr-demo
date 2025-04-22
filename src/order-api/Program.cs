@@ -14,6 +14,14 @@ Log.Logger = new LoggerConfiguration()
         outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}]<s:{SourceContext}> {Message:lj} {NewLine}{Exception}",
         restrictedToMinimumLevel: LogEventLevel.Information
     )
+    .WriteTo.Logger(bl =>
+        bl.Filter.ByIncludingOnly(le => le.Properties.ContainsKey("BusinessEvent"))
+            .WriteTo.File(
+                "logs/business-events.log",
+                rollingInterval: RollingInterval.Day,
+                outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}]<s:{SourceContext}> {Message:lj} {Properties:j} {NewLine}{Exception}"
+            )
+    )
     .CreateLogger();
 
 builder.Logging.ClearProviders().AddSerilog(Log.Logger);

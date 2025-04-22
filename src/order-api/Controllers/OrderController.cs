@@ -48,6 +48,14 @@ public class OrderController : ControllerBase
         }
 
         var result = await orderService.StartProcessAsync(data, metadata);
+
+        LogWithCorrelationId(
+            data.Id.ToString(),
+            "StartProcess",
+            "Starting order process: {@data}",
+            data
+        );
+
         return Ok(result);
     }
 
@@ -56,7 +64,33 @@ public class OrderController : ControllerBase
     [Topic("kafka-pubsub", "orderCompleted")]
     public IActionResult ProcessFinished(OrderCompleted process)
     {
-        logger.LogInformation("Order finished: {@process}", process);
+        LogWithCorrelationId(
+            process.Id.ToString(),
+            "orderCompleted",
+            "Order finished: {@process}",
+            process
+        );
         return Ok();
+    }
+
+    private void LogWithCorrelationId(
+        string correlationId,
+        string businessEvent,
+        string message,
+        object data
+    )
+    {
+        using (
+            this.logger.BeginScope(
+                new Dictionary<string, object>
+                {
+                    ["CorrelationId"] = correlationId,
+                    ["BusinessEvent"] = businessEvent,
+                }
+            )
+        )
+        {
+            this.logger.LogInformation(message, data);
+        }
     }
 }
