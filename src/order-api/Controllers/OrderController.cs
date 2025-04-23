@@ -2,6 +2,7 @@ using Dapr;
 using Microsoft.AspNetCore.Mvc;
 using OrderApi.Models;
 using OrderApi.Services;
+using Dapr.Common.Logging;
 
 namespace OrderApi.Controllers;
 
@@ -10,6 +11,7 @@ namespace OrderApi.Controllers;
 public class OrderController : ControllerBase
 {
     private readonly ILogger<OrderController> logger;
+    private readonly BusinessEventLogger<OrderController> businessLogger;
     private readonly IOrderService orderService;
     private readonly IHttpContextAccessor httpContextAccessor;
     private const string TRACEPARENT = "traceparent";
@@ -18,12 +20,14 @@ public class OrderController : ControllerBase
     public OrderController(
         IOrderService processService,
         IHttpContextAccessor httpContextAccessor,
-        ILogger<OrderController> logger
+        ILogger<OrderController> logger,
+        BusinessEventLogger<OrderController> businessLogger
     )
     {
         this.orderService = processService;
         this.httpContextAccessor = httpContextAccessor;
         this.logger = logger;
+        this.businessLogger = businessLogger;
     }
 
     [HttpPost("start")]
@@ -31,7 +35,7 @@ public class OrderController : ControllerBase
     public async Task<IActionResult> StartProcess([FromBody] Order data)
     {
         Dictionary<string, string> metadata = new Dictionary<string, string>();
-        var httpContext = httpContextAccessor.HttpContext;
+        var httpContext = this.httpContextAccessor.HttpContext;
         if (
             httpContext != null
             && httpContext.Request.Headers.TryGetValue(TRACEPARENT, out var parentValue)
@@ -47,12 +51,12 @@ public class OrderController : ControllerBase
             metadata.Add("cloudevent.tracestate", stateValue.ToString());
         }
 
-        var result = await orderService.StartProcessAsync(data, metadata);
+        var result = await this.orderService.StartProcessAsync(data, metadata);
 
-        LogWithCorrelationId(
+        this.businessLogger.LogEvent(
             data.Id.ToString(),
             "StartProcess",
-            "Starting order process: {@data}",
+            "Starting order process",
             data
         );
 
@@ -64,33 +68,12 @@ public class OrderController : ControllerBase
     [Topic("kafka-pubsub", "orderCompleted")]
     public IActionResult ProcessFinished(OrderCompleted process)
     {
-        LogWithCorrelationId(
+        this.businessLogger.LogEvent(
             process.Id.ToString(),
             "orderCompleted",
-            "Order finished: {@process}",
+            "Order finished",
             process
         );
         return Ok();
-    }
-
-    private void LogWithCorrelationId(
-        string correlationId,
-        string businessEvent,
-        string message,
-        object data
-    )
-    {
-        using (
-            this.logger.BeginScope(
-                new Dictionary<string, object>
-                {
-                    ["CorrelationId"] = correlationId,
-                    ["BusinessEvent"] = businessEvent,
-                }
-            )
-        )
-        {
-            this.logger.LogInformation(message, data);
-        }
     }
 }

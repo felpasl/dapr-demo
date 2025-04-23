@@ -2,7 +2,7 @@ using Dapr;
 using Microsoft.AspNetCore.Mvc;
 using OrderItemProcessing.Models;
 using OrderItemProcessing.Services;
-using Serilog;
+using Dapr.Common.Logging;
 
 namespace OrderItemProcessing.Controllers;
 
@@ -10,18 +10,32 @@ namespace OrderItemProcessing.Controllers;
 [Route("[controller]")]
 public class OrderItemController : ControllerBase
 {
-    private readonly IOrderItemService _orderItemService;
+    private readonly IOrderItemService orderItemService;
+    private readonly ILogger<OrderItemController> logger;
+    private readonly BusinessEventLogger<OrderItemController> businessLogger;
 
-    public OrderItemController(IOrderItemService workService)
+    public OrderItemController(
+        IOrderItemService workService,
+        ILogger<OrderItemController> logger,
+        BusinessEventLogger<OrderItemController> businessLogger)
     {
-        _orderItemService = workService;
+        this.orderItemService = workService;
+        this.logger = logger;
+        this.businessLogger = businessLogger;
     }
 
     [HttpPost("/work")]
     [Topic("kafka-pubsub", "newOrderItem")]
     public async Task<IActionResult> ProcessWork(Models.OrderItem work)
     {
-        await _orderItemService.ProcessWorkAsync(work, new Dictionary<string, string>());
+        this.businessLogger.LogEvent(
+            work.Id.ToString(),
+            "OrderItemReceived",
+            "Received order item for processing",
+            work
+        );
+
+        await this.orderItemService.ProcessWorkAsync(work, new Dictionary<string, string>());
 
         return Ok();
     }

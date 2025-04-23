@@ -1,5 +1,6 @@
 using System.Text;
 using Dapr.Client;
+using Dapr.Common.Logging;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
@@ -18,7 +19,9 @@ public class OrderServiceTests
     public OrderServiceTests()
     {
         _mockDaprClient = new Mock<DaprClient>();
-        _orderService = new OrderService(_mockDaprClient.Object, Mock.Of<ILogger<OrderService>>());
+        var logger = Mock.Of<ILogger<OrderService>>();
+        var businessLogger = new BusinessEventLogger<OrderService>(logger);
+        _orderService = new OrderService(_mockDaprClient.Object, logger, businessLogger);
     }
 
     [Fact]

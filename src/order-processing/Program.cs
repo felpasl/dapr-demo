@@ -1,6 +1,6 @@
 using Dapr;
 using Dapr.Client;
-using Google.Api;
+using Dapr.Common.Logging;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.Extensions.Logging;
 using OrderProcessing.Controllers;
@@ -19,6 +19,14 @@ Log.Logger = new LoggerConfiguration()
         outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}]<s:{SourceContext}> {Message:lj} {NewLine}{Exception}",
         restrictedToMinimumLevel: LogEventLevel.Information
     )
+    .WriteTo.Logger(bl =>
+        bl.Filter.ByIncludingOnly(le => le.Properties.ContainsKey("BusinessEvent"))
+            .WriteTo.File(
+                "logs/business-events.log",
+                rollingInterval: RollingInterval.Day,
+                outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}]<s:{SourceContext}> {Message:lj} {Properties:j} {NewLine}{Exception}"
+            )
+    )
     .CreateLogger();
 
 builder.Logging.ClearProviders().AddSerilog(Log.Logger);
@@ -33,6 +41,9 @@ builder.Services.AddControllers().AddDapr();
 
 // Register services for DI
 builder.Services.AddScoped<IOrderService, OrderService>();
+
+// Register BusinessEventLogger for dependency injection
+builder.Services.AddBusinessEventLogger();
 
 var app = builder.Build();
 

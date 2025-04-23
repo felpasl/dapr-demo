@@ -1,4 +1,5 @@
 using Dapr.Client;
+using Dapr.Common.Logging;
 using Microsoft.Extensions.Logging;
 using Moq;
 using OrderItemProcessing.Models;
@@ -15,9 +16,12 @@ public class OrderItemServiceTests
     public OrderItemServiceTests()
     {
         _mockDaprClient = new Mock<DaprClient>();
+        var logger = Mock.Of<ILogger<OrderItemService>>();
+        var businessLogger = new BusinessEventLogger<OrderItemService>(logger);
         _workerService = new OrderItemService(
             _mockDaprClient.Object,
-            Mock.Of<ILogger<OrderItemService>>()
+            logger,
+            businessLogger
         );
     }
 

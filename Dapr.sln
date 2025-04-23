@@ -1,4 +1,4 @@
-Microsoft Visual Studio Solution File, Format Version 12.00
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
@@ -13,6 +13,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{A5437BCC-1DDD-4A1F-B4EC-B593E3802113}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "tests\Tests.csproj", "{57F29E26-E36C-4138-8AE9-13B7E4C51F37}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dapr.Common.Logging", "src\Dapr.Common.Logging\Dapr.Common.Logging.csproj", "{1ECFC3A3-0F75-4398-942D-7EECD682829A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -36,6 +38,10 @@ Global
 		{57F29E26-E36C-4138-8AE9-13B7E4C51F37}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{57F29E26-E36C-4138-8AE9-13B7E4C51F37}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{57F29E26-E36C-4138-8AE9-13B7E4C51F37}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1ECFC3A3-0F75-4398-942D-7EECD682829A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1ECFC3A3-0F75-4398-942D-7EECD682829A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1ECFC3A3-0F75-4398-942D-7EECD682829A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1ECFC3A3-0F75-4398-942D-7EECD682829A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -45,6 +51,7 @@ Global
 		{908E06E9-7540-48F6-4C33-6B73330724C3} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{B53A3F93-644F-077D-263C-2A9461829575} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{57F29E26-E36C-4138-8AE9-13B7E4C51F37} = {A5437BCC-1DDD-4A1F-B4EC-B593E3802113}
+		{1ECFC3A3-0F75-4398-942D-7EECD682829A} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {499D2BFB-4ECF-4657-B3B7-3AE56DE9FACC}

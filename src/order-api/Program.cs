@@ -1,4 +1,6 @@
+using Dapr;
 using Dapr.Client;
+using Dapr.Common.Logging;
 using OrderApi.Models;
 using OrderApi.Services;
 using Serilog;
@@ -37,6 +39,9 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddControllers(); // Add controllers
 
+// Register BusinessEventLogger for dependency injection
+builder.Services.AddBusinessEventLogger();
+
 var app = builder.Build();
 
 app.UseCloudEvents();
@@ -46,7 +51,6 @@ app.MapSubscribeHandler();
 
 // Configure the HTTP request pipeline.
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
