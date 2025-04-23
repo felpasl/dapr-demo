@@ -17,11 +17,9 @@ public class OrderItemServiceTests
     {
         _mockDaprClient = new Mock<DaprClient>();
         var logger = Mock.Of<ILogger<OrderItemService>>();
-        var businessLogger = new BusinessEventLogger<OrderItemService>(logger);
         _workerService = new OrderItemService(
             _mockDaprClient.Object,
-            logger,
-            businessLogger
+            logger
         );
     }
 

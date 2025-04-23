@@ -8,80 +8,73 @@ public class OrderService : IOrderService
 {
     private readonly DaprClient daprClient;
     private readonly ILogger<OrderService> logger;
-    private readonly BusinessEventLogger<OrderService> businessLogger;
 
     public OrderService(
         DaprClient daprClient,
-        ILogger<OrderService> logger,
-        BusinessEventLogger<OrderService> businessLogger
+        ILogger<OrderService> logger
     )
     {
         this.daprClient = daprClient;
         this.logger = logger;
-        this.businessLogger = businessLogger;
     }
 
     public async Task NewOrderAsync(Order order, Dictionary<string, string> metadata)
     {
-        this.businessLogger.LogEvent(
-            order.Id.ToString(),
-            "ProcessingStarted",
-            "New process started",
-            order
-        );
-
-        await this.daprClient.PublishEventAsync<Order>(
-            "kafka-pubsub",
-            "processing",
-            order,
-            metadata
-        );
-
-        // Log the Dapr publish event
-        this.logger.LogDaprPubSubEvent(
-            order.Id.ToString(),
-            "kafka-pubsub",
-            "processing",
-            "Publish",
-            order
-        );
-
-        for (int i = 0; i < order.Quantity; i++)
+        using (this.logger.BeginScope(order.Id.ToString(), "ProcessingStarted"))
         {
-            var work = new OrderItem
-            {
-                Id = Guid.NewGuid(),
-                ProcessId = order.Id,
-                startAt = DateTime.Now,
-                Total = order.Quantity,
-                Index = i,
-                Name = $"Work {i}",
-                Duration = new Random().Next(20, 100),
-                Status = "Started",
-            };
+            this.logger.LogEvent("New process started", order);
 
-            this.businessLogger.LogEvent(
-                work.Id.ToString(),
-                "WorkCreated",
-                "New work item created",
-                work
-            );
-
-            await this.daprClient.PublishEventAsync<OrderItem>(
+            await this.daprClient.PublishEventAsync<Order>(
                 "kafka-pubsub",
-                "newOrderItem",
-                work,
+                "processing",
+                order,
                 metadata
             );
 
-            // Log the Dapr publish event for each work item
+            // Log the Dapr publish event
             this.logger.LogDaprPubSubEvent(
-                work.Id.ToString(),
+                order.Id.ToString(),
                 "kafka-pubsub",
-                "newOrderItem",
+                "processing",
                 "Publish",
-                work
+                order
             );
+
+            for (int i = 0; i < order.Quantity; i++)
+            {
+                var work = new OrderItem
+                {
+                    Id = Guid.NewGuid(),
+                    ProcessId = order.Id,
+                    startAt = DateTime.Now,
+                    Total = order.Quantity,
+                    Index = i,
+                    Name = $"Work {i}",
+                    Duration = new Random().Next(20, 100),
+                    Status = "Started",
+                };
+
+                using (this.logger.BeginScope(work.Id.ToString(), "WorkCreated"))
+                {
+                    this.logger.LogEvent("New work item created", work);
+
+                    await this.daprClient.PublishEventAsync<OrderItem>(
+                        "kafka-pubsub",
+                        "newOrderItem",
+                        work,
+                        metadata
+                    );
+
+                    // Log the Dapr publish event for each work item
+                    this.logger.LogDaprPubSubEvent(
+                        work.Id.ToString(),
+                        "kafka-pubsub",
+                        "newOrderItem",
+                        "Publish",
+                        work
+                    );
+                }
+            }
         }
     }
 }

@@ -11,7 +11,6 @@ namespace OrderApi.Controllers;
 public class OrderController : ControllerBase
 {
     private readonly ILogger<OrderController> logger;
-    private readonly BusinessEventLogger<OrderController> businessLogger;
     private readonly IOrderService orderService;
     private readonly IHttpContextAccessor httpContextAccessor;
     private const string TRACEPARENT = "traceparent";
@@ -20,14 +19,12 @@ public class OrderController : ControllerBase
     public OrderController(
         IOrderService processService,
         IHttpContextAccessor httpContextAccessor,
-        ILogger<OrderController> logger,
-        BusinessEventLogger<OrderController> businessLogger
+        ILogger<OrderController> logger
     )
     {
         this.orderService = processService;
         this.httpContextAccessor = httpContextAccessor;
         this.logger = logger;
-        this.businessLogger = businessLogger;
     }
 
     [HttpPost("start")]
@@ -51,16 +48,12 @@ public class OrderController : ControllerBase
             metadata.Add("cloudevent.tracestate", stateValue.ToString());
         }
 
-        var result = await this.orderService.StartProcessAsync(data, metadata);
-
-        this.businessLogger.LogEvent(
-            data.Id.ToString(),
-            "StartProcess",
-            "Starting order process",
-            data
-        );
-
-        return Ok(result);
+        using (this.logger.BeginScope(data.Id.ToString(), "StartProcess"))
+        {
+            var result = await this.orderService.StartProcessAsync(data, metadata);
+            this.logger.LogEvent("Starting order process", data);
+            return Ok(result);
+        }
     }
 
     [HttpPost("complete")]
@@ -68,12 +61,10 @@ public class OrderController : ControllerBase
     [Topic("kafka-pubsub", "orderCompleted")]
     public IActionResult ProcessFinished(OrderCompleted process)
     {
-        this.businessLogger.LogEvent(
-            process.Id.ToString(),
-            "orderCompleted",
-            "Order finished",
-            process
-        );
-        return Ok();
+        using (this.logger.BeginScope(process.Id.ToString(), "orderCompleted"))
+        {
+            this.logger.LogEvent("Order finished", process);
+            return Ok();
+        }
     }
 }

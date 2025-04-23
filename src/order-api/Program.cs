@@ -39,8 +39,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddControllers(); // Add controllers
 
-// Register BusinessEventLogger for dependency injection
-builder.Services.AddBusinessEventLogger();
+// Using LoggingExtensions directly instead of BusinessEventLogger
 
 var app = builder.Build();
 

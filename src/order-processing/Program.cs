@@ -42,9 +42,6 @@ builder.Services.AddControllers().AddDapr();
 // Register services for DI
 builder.Services.AddScoped<IOrderService, OrderService>();
 
-// Register BusinessEventLogger for dependency injection
-builder.Services.AddBusinessEventLogger();
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

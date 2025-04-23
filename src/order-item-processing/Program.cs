@@ -37,8 +37,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IOrderItemService, OrderItemService>();
 builder.Services.AddControllers().AddDapr();
 
-// Register BusinessEventLogger for dependency injection
-builder.Services.AddBusinessEventLogger();
+// Using LoggingExtensions directly instead of BusinessEventLogger
 
 var app = builder.Build();
 

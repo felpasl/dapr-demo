@@ -7,35 +7,35 @@ namespace OrderApi.Services;
 public class OrderService : IOrderService
 {
     private readonly ILogger<OrderService> logger;
-    private readonly BusinessEventLogger<OrderService> businessLogger;
     private readonly DaprClient daprClient;
 
     public OrderService(
         DaprClient daprClient,
-        ILogger<OrderService> logger,
-        BusinessEventLogger<OrderService> businessLogger
+        ILogger<OrderService> logger
     )
     {
         this.daprClient = daprClient;
         this.logger = logger;
-        this.businessLogger = businessLogger;
     }
 
     public async Task<Order> StartProcessAsync(Order order, Dictionary<string, string> metadata)
     {
-        await this.daprClient.PublishEventAsync<Order>("kafka-pubsub", "newOrder", order, metadata);
+        using (this.logger.BeginScope(order.Id.ToString(), "NewOrder"))
+        {
+            await this.daprClient.PublishEventAsync<Order>("kafka-pubsub", "newOrder", order, metadata);
 
-        this.businessLogger.LogEvent(order.Id.ToString(), "NewOrder", "New Order received", order);
+            this.logger.LogEvent("New Order received", order);
 
-        // Additionally log the Dapr pub/sub event
-        this.logger.LogDaprPubSubEvent(
-            order.Id.ToString(),
-            "kafka-pubsub",
-            "newOrder",
-            "Publish",
-            order
-        );
+            // Additionally log the Dapr pub/sub event
+            this.logger.LogDaprPubSubEvent(
+                order.Id.ToString(),
+                "kafka-pubsub",
+                "newOrder",
+                "Publish",
+                order
+            );
 
-        return order;
+            return order;
+        }
     }
 }

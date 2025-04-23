@@ -1,21 +1,24 @@
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace Dapr.Common.Logging
 {
     /// <summary>
-    /// Extensions for registering logging services with dependency injection
+    /// Extension methods for setting up Dapr logging services in an Microsoft.Extensions.DependencyInjection.IServiceCollection.
     /// </summary>
     public static class DependencyInjection
     {
         /// <summary>
-        /// Adds the BusinessEventLogger to the service collection
+        /// Adds Dapr logging services to the specified Microsoft.Extensions.DependencyInjection.IServiceCollection.
         /// </summary>
-        public static IServiceCollection AddBusinessEventLogger(this IServiceCollection services)
+        /// <param name="services">The Microsoft.Extensions.DependencyInjection.IServiceCollection to add services to.</param>
+        /// <returns>The Microsoft.Extensions.DependencyInjection.IServiceCollection so that additional calls can be chained.</returns>
+        public static IServiceCollection AddDaprLogging(this IServiceCollection services)
         {
-            // Register BusinessEventLogger for each type that requests it via DI
-            services.AddTransient(typeof(BusinessEventLogger<>));
+            // No additional services needed for the simplified logging approach
+            // The LoggingExtensions class provides extension methods directly on ILogger
             return services;
         }
+        
+        // Note: AddBusinessEventLogger has been removed as we're now using LoggingExtensions directly
     }
 }

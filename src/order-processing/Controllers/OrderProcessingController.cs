@@ -13,7 +13,6 @@ public class OrderProcessingController : ControllerBase
     private readonly IOrderService consumeService;
     private readonly IHttpContextAccessor httpContextAccessor;
     private readonly ILogger<OrderProcessingController> logger;
-    private readonly BusinessEventLogger<OrderProcessingController> businessLogger;
 
     private const string TRACEPARENT = "traceparent";
     private const string TRACESTATE = "tracestate";
@@ -21,14 +20,12 @@ public class OrderProcessingController : ControllerBase
     public OrderProcessingController(
         IOrderService consumeService,
         IHttpContextAccessor httpContextAccessor,
-        ILogger<OrderProcessingController> logger,
-        BusinessEventLogger<OrderProcessingController> businessLogger
+        ILogger<OrderProcessingController> logger
     )
     {
         this.consumeService = consumeService;
         this.httpContextAccessor = httpContextAccessor;
         this.logger = logger;
-        this.businessLogger = businessLogger;
     }
 
     [HttpPost("/order-processing")]
@@ -54,15 +51,11 @@ public class OrderProcessingController : ControllerBase
             metadata.Add("cloudevent.tracestate", stateValue.ToString());
         }
 
-        this.businessLogger.LogEvent(
-            order.Id.ToString(),
-            "OrderProcessing",
-            "Processing new order",
-            order
-        );
-
-        await this.consumeService.NewOrderAsync(order, metadata);
-
-        return Ok();
+        using (this.logger.BeginScope(order.Id.ToString(), "OrderProcessing"))
+        {
+            this.logger.LogEvent("Processing new order", order);
+            await this.consumeService.NewOrderAsync(order, metadata);
+            return Ok();
+        }
     }
 }
