@@ -1,6 +1,6 @@
 using Dapr.Client;
-using OrderApi.Models;
 using Dapr.Common.Logging;
+using OrderApi.Models;
 
 namespace OrderApi.Services;
 
@@ -11,9 +11,10 @@ public class OrderService : IOrderService
     private readonly DaprClient daprClient;
 
     public OrderService(
-        DaprClient daprClient, 
+        DaprClient daprClient,
         ILogger<OrderService> logger,
-        BusinessEventLogger<OrderService> businessLogger)
+        BusinessEventLogger<OrderService> businessLogger
+    )
     {
         this.daprClient = daprClient;
         this.logger = logger;
@@ -24,12 +25,7 @@ public class OrderService : IOrderService
     {
         await this.daprClient.PublishEventAsync<Order>("kafka-pubsub", "newOrder", order, metadata);
 
-        this.businessLogger.LogEvent(
-            order.Id.ToString(), 
-            "NewOrder", 
-            "New Order received", 
-            order
-        );
+        this.businessLogger.LogEvent(order.Id.ToString(), "NewOrder", "New Order received", order);
 
         // Additionally log the Dapr pub/sub event
         this.logger.LogDaprPubSubEvent(

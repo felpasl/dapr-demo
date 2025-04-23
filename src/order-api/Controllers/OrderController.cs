@@ -1,8 +1,8 @@
 using Dapr;
+using Dapr.Common.Logging;
 using Microsoft.AspNetCore.Mvc;
 using OrderApi.Models;
 using OrderApi.Services;
-using Dapr.Common.Logging;
 
 namespace OrderApi.Controllers;
 

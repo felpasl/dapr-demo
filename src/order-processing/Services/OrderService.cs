@@ -1,6 +1,6 @@
 using Dapr.Client;
-using OrderProcessing.Models;
 using Dapr.Common.Logging;
+using OrderProcessing.Models;
 
 namespace OrderProcessing.Services;
 
@@ -11,9 +11,10 @@ public class OrderService : IOrderService
     private readonly BusinessEventLogger<OrderService> businessLogger;
 
     public OrderService(
-        DaprClient daprClient, 
+        DaprClient daprClient,
         ILogger<OrderService> logger,
-        BusinessEventLogger<OrderService> businessLogger)
+        BusinessEventLogger<OrderService> businessLogger
+    )
     {
         this.daprClient = daprClient;
         this.logger = logger;
@@ -65,7 +66,7 @@ public class OrderService : IOrderService
                 "New work item created",
                 work
             );
-            
+
             await this.daprClient.PublishEventAsync<OrderItem>(
                 "kafka-pubsub",
                 "newOrderItem",

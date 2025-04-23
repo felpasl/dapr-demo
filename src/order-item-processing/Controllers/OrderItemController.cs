@@ -1,8 +1,8 @@
 using Dapr;
+using Dapr.Common.Logging;
 using Microsoft.AspNetCore.Mvc;
 using OrderItemProcessing.Models;
 using OrderItemProcessing.Services;
-using Dapr.Common.Logging;
 
 namespace OrderItemProcessing.Controllers;
 
@@ -17,7 +17,8 @@ public class OrderItemController : ControllerBase
     public OrderItemController(
         IOrderItemService workService,
         ILogger<OrderItemController> logger,
-        BusinessEventLogger<OrderItemController> businessLogger)
+        BusinessEventLogger<OrderItemController> businessLogger
+    )
     {
         this.orderItemService = workService;
         this.logger = logger;
