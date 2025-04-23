@@ -55,7 +55,8 @@ void ConfigureSerilog(WebApplicationBuilder builder, bool initialSetup, WebAppli
         )
         .WriteTo.Logger(bl =>
         {
-            var subLogger = bl.Filter.ByIncludingOnly(le => le.Properties.ContainsKey("BusinessEvent"))
+            var subLogger = bl
+                .Filter.ByIncludingOnly(le => le.Properties.ContainsKey("BusinessEvent"))
                 .WriteTo.File(
                     "logs/business-events.log",
                     rollingInterval: RollingInterval.Day,

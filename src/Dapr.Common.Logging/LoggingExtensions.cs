@@ -31,6 +31,11 @@ namespace Dapr.Common.Logging
             Dictionary<string, object>? additionalProperties = null
         )
         {
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
             // Create the base scope dictionary
             var scopeState = new Dictionary<string, object> { [CorrelationIdKey] = correlationId };
 
@@ -53,7 +58,7 @@ namespace Dapr.Common.Logging
                 }
             }
             // Create the scope
-            return logger.BeginScope(scopeState);
+            return logger.BeginScope(scopeState)!;
         }
 
         /// <summary>

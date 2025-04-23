@@ -68,9 +68,14 @@ namespace Dapr.Common.Logging
                 throw new ArgumentNullException(nameof(pubsubName));
             if (string.IsNullOrEmpty(topicName))
                 throw new ArgumentNullException(nameof(topicName));
-            
+
             return loggerSinkConfiguration.Sink(
-                new ServiceProviderDaprPubSubSink(serviceProvider, pubsubName, topicName, formatProvider)
+                new ServiceProviderDaprPubSubSink(
+                    serviceProvider,
+                    pubsubName,
+                    topicName,
+                    formatProvider
+                )
             );
         }
     }
