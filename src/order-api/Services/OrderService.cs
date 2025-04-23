@@ -9,10 +9,7 @@ public class OrderService : IOrderService
     private readonly ILogger<OrderService> logger;
     private readonly DaprClient daprClient;
 
-    public OrderService(
-        DaprClient daprClient,
-        ILogger<OrderService> logger
-    )
+    public OrderService(DaprClient daprClient, ILogger<OrderService> logger)
     {
         this.daprClient = daprClient;
         this.logger = logger;
@@ -22,18 +19,14 @@ public class OrderService : IOrderService
     {
         using (this.logger.BeginScope(order.Id.ToString(), "NewOrder"))
         {
-            await this.daprClient.PublishEventAsync<Order>("kafka-pubsub", "newOrder", order, metadata);
-
-            this.logger.LogEvent("New Order received", order);
-
-            // Additionally log the Dapr pub/sub event
-            this.logger.LogDaprPubSubEvent(
-                order.Id.ToString(),
+            await this.daprClient.PublishEventAsync<Order>(
                 "kafka-pubsub",
                 "newOrder",
-                "Publish",
-                order
+                order,
+                metadata
             );
+
+            this.logger.LogEvent("New Order received", order);
 
             return order;
         }

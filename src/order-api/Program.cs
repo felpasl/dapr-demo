@@ -8,40 +8,23 @@ using Serilog.Events;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Setup Serilog
-Log.Logger = new LoggerConfiguration()
-    .Enrich.FromLogContext()
-    .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
-    .WriteTo.Console(
-        outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}]<s:{SourceContext}> {Message:lj} {NewLine}{Exception}",
-        restrictedToMinimumLevel: LogEventLevel.Information
-    )
-    .WriteTo.Logger(bl =>
-        bl.Filter.ByIncludingOnly(le => le.Properties.ContainsKey("BusinessEvent"))
-            .WriteTo.File(
-                "logs/business-events.log",
-                rollingInterval: RollingInterval.Day,
-                outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}]<s:{SourceContext}> {Message:lj} {Properties:j} {NewLine}{Exception}"
-            )
-    )
-    .CreateLogger();
+// Register DaprClient for dependency injection
+builder.Services.AddDaprClient();
 
-builder.Logging.ClearProviders().AddSerilog(Log.Logger);
+// Configure Serilog for initial setup
+ConfigureSerilog(builder, initialSetup: true);
 
 // Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-// Add services for DI
-builder.Services.AddDaprClient();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddControllers(); // Add controllers
 
-// Using LoggingExtensions directly instead of BusinessEventLogger
-
 var app = builder.Build();
+
+// Update Serilog configuration with DI-based Dapr sink
+ConfigureSerilog(builder, initialSetup: false, app: app);
 
 app.UseCloudEvents();
 
@@ -49,7 +32,6 @@ app.UseCloudEvents();
 app.MapSubscribeHandler();
 
 // Configure the HTTP request pipeline.
-
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -60,3 +42,44 @@ if (app.Environment.IsDevelopment())
 app.MapControllers();
 
 app.Run();
+
+// Local method to configure Serilog with or without DI
+void ConfigureSerilog(WebApplicationBuilder builder, bool initialSetup, WebApplication? app = null)
+{
+    var loggerConfig = new LoggerConfiguration()
+        .Enrich.FromLogContext()
+        .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+        .WriteTo.Console(
+            outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}]<s:{SourceContext}> {Message:lj} {NewLine}{Exception}",
+            restrictedToMinimumLevel: LogEventLevel.Information
+        )
+        .WriteTo.Logger(bl =>
+        {
+            var subLogger = bl.Filter.ByIncludingOnly(le => le.Properties.ContainsKey("BusinessEvent"))
+                .WriteTo.File(
+                    "logs/business-events.log",
+                    rollingInterval: RollingInterval.Day,
+                    outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}]<s:{SourceContext}> {Message:lj} {Properties:j} {NewLine}{Exception}"
+                );
+
+            // Add DaprPubSub sink only for the final setup when app is available
+            if (!initialSetup && app != null)
+            {
+                subLogger.WriteTo.DaprPubSub(app.Services, "kafka-pubsub", "logs");
+            }
+        });
+
+    Log.Logger = loggerConfig.CreateLogger();
+
+    if (initialSetup)
+    {
+        // Initial setup
+        builder.Logging.ClearProviders().AddSerilog(Log.Logger);
+        builder.Host.UseSerilog();
+    }
+    else if (app != null)
+    {
+        // After app is built, ensure proper cleanup
+        app.Lifetime.ApplicationStopped.Register(Log.CloseAndFlush);
+    }
+}

@@ -15,7 +15,7 @@ namespace Dapr.Common.Logging
         private const string BusinessEventKey = "BusinessEvent";
         private const string TraceIdKey = "TraceId";
         private const string SpanIdKey = "SpanId";
-        
+
         /// <summary>
         /// Creates a logging scope for business events
         /// </summary>
@@ -112,6 +112,49 @@ namespace Dapr.Common.Logging
                         break;
                 }
             }
+        }
+
+        /// <summary>
+        /// Logs a Dapr PubSub event with structured data
+        /// </summary>
+        /// <param name="logger">The logger to use</param>
+        /// <param name="correlationId">A unique identifier for correlating related log entries</param>
+        /// <param name="pubsubName">The name of the pubsub component</param>
+        /// <param name="topic">The topic name</param>
+        /// <param name="operation">The operation type (Publish, Subscribe, etc.)</param>
+        /// <param name="data">Optional structured data to include in the log</param>
+        /// <param name="logLevel">The log level (defaults to Information)</param>
+        public static void LogDaprPubSubEvent(
+            this ILogger logger,
+            string correlationId,
+            string pubsubName,
+            string topic,
+            string operation,
+            object? data = null,
+            LogLevel logLevel = LogLevel.Information
+        )
+        {
+            var pubSubEvent = new
+            {
+                PubSubName = pubsubName,
+                Topic = topic,
+                Operation = operation,
+                Data = data,
+            };
+
+            var additionalProperties = new Dictionary<string, object>
+            {
+                ["PubSubName"] = pubsubName,
+                ["Topic"] = topic,
+                ["Operation"] = operation,
+            };
+
+            using var scope = logger.BeginScope(correlationId, "DaprPubSub", additionalProperties);
+            logger.LogEvent(
+                $"Dapr PubSub {operation} on {pubsubName}/{topic}",
+                pubSubEvent,
+                logLevel
+            );
         }
     }
 }
