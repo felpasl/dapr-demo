@@ -113,44 +113,5 @@ namespace Dapr.Common.Logging
                 }
             }
         }
-
-        /// <summary>
-        /// Logs a Dapr pub/sub event directly without using a business scope
-        /// </summary>
-        /// <param name="logger">The logger to use</param>
-        /// <param name="correlationId">The correlation ID</param>
-        /// <param name="pubSubName">The name of the pub/sub component</param>
-        /// <param name="topic">The topic name</param>
-        /// <param name="action">The action (e.g., Publish, Subscribe)</param>
-        /// <param name="data">Optional structured data</param>
-        public static void LogDaprPubSubEvent(
-            this ILogger logger,
-            string correlationId,
-            string pubSubName,
-            string topic,
-            string action,
-            object? data = null
-        )
-        {
-            if (data != null)
-            {
-                logger.LogInformation(
-                    "Dapr PubSub {Action} on {PubSubName}/{Topic}: {@Data}",
-                    action,
-                    pubSubName,
-                    topic,
-                    data
-                );
-            }
-            else
-            {
-                logger.LogInformation(
-                    "Dapr PubSub {Action} on {PubSubName}/{Topic}",
-                    action,
-                    pubSubName,
-                    topic
-                );
-            }
-        }
     }
 }

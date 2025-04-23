@@ -9,10 +9,7 @@ public class OrderItemService : IOrderItemService
     private readonly DaprClient daprClient;
     private readonly ILogger<OrderItemService> logger;
 
-    public OrderItemService(
-        DaprClient daprClient,
-        ILogger<OrderItemService> logger
-    )
+    public OrderItemService(DaprClient daprClient, ILogger<OrderItemService> logger)
     {
         this.daprClient = daprClient;
         this.logger = logger;
@@ -31,51 +28,31 @@ public class OrderItemService : IOrderItemService
 
             orderItem.Status = "Completed";
 
-            using (this.logger.BeginScope(orderItem.ProcessId.ToString(), "OrderItemCompleted"))
-            {
-                this.logger.LogEvent("Order item processing completed", orderItem);
+            this.logger.LogEvent("Order item processing completed", orderItem);
 
-                await this.daprClient.PublishEventAsync<Models.OrderItem>(
+            await this.daprClient.PublishEventAsync<Models.OrderItem>(
+                "kafka-pubsub",
+                "orderItemCompleted",
+                orderItem,
+                metadata
+            );
+
+            if (orderItem.Index == orderItem.Total - 1)
+            {
+                var completedOrder = new OrderCompleted(
+                    orderItem.ProcessId,
+                    DateTime.Now,
+                    "Success"
+                );
+
+                this.logger.LogEvent("All order items processed, order completed", completedOrder);
+
+                await this.daprClient.PublishEventAsync<OrderCompleted>(
                     "kafka-pubsub",
-                    "orderItemCompleted",
-                    orderItem,
+                    "orderCompleted",
+                    completedOrder,
                     metadata
                 );
-
-                // Log the Dapr pub/sub event
-                this.logger.LogDaprPubSubEvent(
-                    orderItem.ProcessId.ToString(),
-                    "kafka-pubsub",
-                    "orderItemCompleted",
-                    "Publish",
-                    orderItem
-                );
-
-                if (orderItem.Index == orderItem.Total - 1)
-                {
-                    var completedOrder = new OrderCompleted(orderItem.ProcessId, DateTime.Now, "Success");
-
-                    using (this.logger.BeginScope(orderItem.ProcessId.ToString(), "OrderCompleted"))
-                    {
-                        this.logger.LogEvent("All order items processed, order completed", completedOrder);
-
-                        await this.daprClient.PublishEventAsync<OrderCompleted>(
-                            "kafka-pubsub",
-                            "orderCompleted",
-                            completedOrder,
-                            metadata
-                        );
-
-                        // Log the Dapr pub/sub event for order completion
-                        this.logger.LogDaprPubSubEvent(
-                            orderItem.ProcessId.ToString(),
-                            "kafka-pubsub",
-                            "orderCompleted",
-                            "Publish",
-                            completedOrder
-                        );
-                    }
-                }
             }
         }
     }
